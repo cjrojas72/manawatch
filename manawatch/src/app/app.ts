@@ -5,7 +5,7 @@ import { CardSearchbar } from './components/card-searchbar/card-searchbar'
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, CardSearchbar],
+  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
