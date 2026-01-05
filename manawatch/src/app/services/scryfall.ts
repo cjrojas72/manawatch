@@ -43,4 +43,12 @@ export class ScryfallService {
       })
     );
   }
+
+  getAutocomplete(query: string): Observable<string[]> {
+    const params = new HttpParams().set('q', query);
+    return this.http.get<any>(`${this.BASE_URL}/cards/autocomplete`, { params }).pipe(
+      map(res => res.data || []), // Scryfall returns an array of strings here
+      catchError(() => of([]))
+    );
+  }
 }
