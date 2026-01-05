@@ -47,7 +47,14 @@ export class ScryfallService {
   getAutocomplete(query: string): Observable<string[]> {
     const params = new HttpParams().set('q', query);
     return this.http.get<any>(`${this.BASE_URL}/cards/autocomplete`, { params }).pipe(
-      map(res => res.data || []), // Scryfall returns an array of strings here
+      map(res => res.data || []),
+      catchError(() => of([]))
+    );
+  }
+
+  getTop10Cards(): Observable<string[]>{
+    return this.http.get<any>(`${this.BASE_URL}/cards/search?q=not:reprint+usd>40&order=usd&dir=desc`).pipe(
+      map(res => res.data.slice(0, 10) || []), 
       catchError(() => of([]))
     );
   }
