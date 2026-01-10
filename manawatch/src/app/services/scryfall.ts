@@ -25,11 +25,10 @@ export class ScryfallService {
     }
 
     // Scryfall expects the 'q' parameter for searches
-    const params = new HttpParams().set('q', query);
+    const params = new HttpParams().set('q', query).set('unique', 'prints');
 
     const headers = new HttpHeaders({
       'Accept': 'application/json',
-      'Authorization': `Bearer ${this.FAKE_API_KEY}`,
       'User-Agent': 'MTGWatchlistApp/1.0'
     });
 

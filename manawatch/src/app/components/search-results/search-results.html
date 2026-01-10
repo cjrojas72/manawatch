@@ -1,0 +1,61 @@
+<!-- 
+<div class="mb-12 animate-in">
+    @if (searchResults().length > 0) {
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-sm font-black uppercase tracking-widest text-indigo-400">Search Results</h2>
+            <button (click)="searchResults.set([])" class="text-xs text-slate-500 hover:text-white">Close Results</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @for (card of searchResults(); track card.id) {
+                <div class="bg-[#16161a] border border-white/5 rounded-2xl p-4 flex gap-4 hover:border-indigo-500/50 transition-all">
+                  <img [src]="card.image_uris?.small" class="w-20 h-28 object-contain rounded" alt="">
+                  <div class="flex flex-col justify-between flex-grow">
+                    <div>
+                      <h3 class="font-bold text-sm text-white leading-tight">{{card.name}}</h3>
+                      <p class="text-[10px] text-slate-500 uppercase mt-1">{{card.set_name}}</p>
+                    </div>
+                    <div class="flex items-center justify-between mt-2">
+                      <span class="font-mono font-bold text-indigo-400">${{card.prices?.usd || '0.00'}}</span>
+                      <button class="p-2 bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              }
+        </div>
+    }
+</div> -->
+ @if (searchResults().length > 0) {
+<div class="flex items-center justify-between mb-6">
+              <div class="flex flex-col">
+                <h2 class="text-sm font-black uppercase tracking-widest text-indigo-400">Search Results</h2>
+                <span class="text-[10px] text-slate-600 font-bold uppercase tracking-tighter mt-1">
+                  Showing {{searchResults().length}} matching prints
+                </span>
+              </div>
+              <button (click)="clearResults()" class="text-xs text-slate-500 hover:text-white">Clear Results</button>
+            </div>
+            
+            <div class="bg-[#16161a] border border-white/5 rounded-3xl p-6 shadow-xl max-h-[600px] overflow-y-auto custom-scrollbar">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                @for (card of searchResults(); track card.id) {
+                  <div class="bg-white/[0.02] border border-white/5 rounded-2xl p-4 flex gap-4 hover:border-indigo-500/50 transition-all group">
+                    <img [src]="card.image_uris?.small || (card.card_faces && card.card_faces[0].image_uris?.small)" class="w-16 h-24 object-contain rounded group-hover:scale-105 transition-transform" alt="" onerror="this.src='https://svgsilh.com/svg/147281.svg'">
+                    <div class="flex flex-col justify-between flex-grow min-w-0">
+                      <div>
+                        <h3 class="font-bold text-xs text-white leading-tight truncate">{{card.name}}</h3>
+                        <p class="text-[9px] text-slate-500 uppercase mt-1 truncate">{{card.set_name}}</p>
+                      </div>
+                      <div class="flex items-center justify-between mt-2">
+                        <span class="font-mono font-bold text-white text-sm">${{card.prices?.usd || '0.00'}}</span>
+                        <button class="p-2 bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/10">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+}

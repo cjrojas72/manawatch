@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, OnInit, signal, ViewChild, viewChild } from '@angular/core';
 import { ScryfallService } from '../../services/scryfall';
 import { FormControl } from '@angular/forms';
 import { 
@@ -11,6 +11,7 @@ import {
 import { Observable, of } from 'rxjs';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common'
+import { SearchqueryEvent } from '../../services/searchquery.event';
 
 @Component({
   selector: 'app-card-searchbar',
@@ -25,12 +26,25 @@ export class CardSearchbar implements OnInit {
   isLoading = signal(false);
   suggestions = signal<string[]>([]);
   hasExecutedSearch = false;
+  showSuggestions = signal(false);
 
   private scryFallService = inject(ScryfallService);
+  private searchqueryEvent = inject(SearchqueryEvent);
+
+
+  @ViewChild('searchContainer', { static: true }) searchContainer!: ElementRef;
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (this.searchContainer && !this.searchContainer.nativeElement.contains(event.target as Node)) {
+      this.showSuggestions.set(false);
+    }
+  }
 
   constructor(private scryfallService: ScryfallService) {
     this.suggestions$ = this.searchControl.valueChanges.pipe(
-      tap(val => console.log(val)),
+      tap(val => {
+        this.showSuggestions.set(true);
+      }),
       debounceTime(200), // Fast response for typing
       distinctUntilChanged(),
       tap(query => console.log('Searching for things that have: ', query)),
@@ -53,12 +67,14 @@ export class CardSearchbar implements OnInit {
   }
 }
 
-  executeSearch(query: string) {
-
+  async executeSearch(query: string) {
     console.log(query);
-    // this.results$ = this.scryfallService.searchCards(query).pipe(
-    //   catchError(() => of([]))
-    // );
+    this.hasExecutedSearch = true;
+    this.isLoading.set(true);
+
+    await this.searchqueryEvent.publishSearch(query);
+    this.isLoading.set(false);
+    this.showSuggestions.set(false);
   }
 
   setupSearch() {
