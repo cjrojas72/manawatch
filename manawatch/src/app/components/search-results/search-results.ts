@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal, OnDestroy } from '@angular/core';
 import { ScryfallService } from '../../services/scryfall';
 import { Subscription } from 'rxjs';
 import { SearchqueryEvent } from '../../services/searchquery.event';
+import { WatchlistService } from '../../services/watchlist.service';
 
 @Component({
   selector: 'app-search-results',
@@ -12,6 +13,7 @@ import { SearchqueryEvent } from '../../services/searchquery.event';
 export class SearchResults implements OnInit, OnDestroy {
   searchResults = signal<any[]>([]);
   scryFallService = inject(ScryfallService);
+  watchlistService = inject(WatchlistService);
 
   private searchSub?: Subscription;
   private searchEvent = inject(SearchqueryEvent); 
@@ -23,11 +25,19 @@ export class SearchResults implements OnInit, OnDestroy {
     }
     this.scryFallService.searchCards(queryStr).subscribe(cards => {
       this.searchResults.set(cards);
+      console.log(cards);
     });
   }
 
   clearResults() {
     this.searchResults.set([]);
+  }
+
+  async addCardToWatchlist(card: any) {
+    // Placeholder for adding card to watchlist functionality
+    console.log('Adding card to watchlist:', card);
+    await this.watchlistService.addCardToWatchlist(card);
+    this.watchlistService.emitCardAdded();
   }
 
   ngOnInit(): void {

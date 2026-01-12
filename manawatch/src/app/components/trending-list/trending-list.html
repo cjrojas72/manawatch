@@ -7,18 +7,19 @@
     </div>
     <div class="p-4 space-y-2">
         @for (card of marketTrending(); track card.id; let i = $index) {
-            <div class="flex items-center gap-4 p-3 hover:bg-white/5 rounded-xl transition-all group">
+            <div class="flex items-center gap-4 p-3 hover:bg-white/5 rounded-xl transition-all group cursor-pointer">
                 <div class="w-4 text-left">
                     <span class="text-[8px] font-black text-slate-700">#{{i + 1}}</span>
                 </div>
                 <img [src]="card.image_uris?.small" class="w-12 h-16 object-contain rounded shadow" alt="{{ card.name }}"/>
                 <div class="flex-grow min-w-0">
-                    <h4 class="text-sm font-bold text-slate-200 truncate cursor-pointer group-hover:text-indigo-400">{{card.name}}</h4>
+                    <h4 class="text-sm font-bold text-slate-200 truncate group-hover:text-indigo-400">{{card.name}}</h4>
                     <div class="flex items-center gap-2 mt-1">
                         <span class="text-[9px] text-slate-500 font-bold uppercase truncate">{{ card.set_name }}</span>
-                        <span class="text-[8px] px-1 bg-white/5 rounded text-blue-500 uppercase">{{ card.rarity }}</span>
+                        <span class="text-[9px] px-1 bg-white/5 rounded text-blue-500 uppercase">{{ card.rarity }}</span>
+                        <span class="text-[9px] bg-white/5 rounded text-blue-500 uppercase truncate">#{{ card.collector_number }}</span>
                         @if(card.foil){
-                            <span class="text-[8px] px-1 bg-white/5 rounded text-blue-500 uppercase">Foil</span>
+                            <span class="text-[9px] px-1 bg-white/5 rounded text-blue-500 uppercase">Foil</span>
                         }
                     </div>
                 </div>

@@ -75,6 +75,7 @@ export class CardSearchbar implements OnInit {
     await this.searchqueryEvent.publishSearch(query);
     this.isLoading.set(false);
     this.showSuggestions.set(false);
+    this.searchqueryEvent.selectTab('market');
   }
 
   setupSearch() {
