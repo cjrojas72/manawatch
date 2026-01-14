@@ -20,4 +20,6 @@ export class SearchqueryEvent {
   selectTab(tabName: string) {
     this.tabChangeSource.next(tabName);
   }
+
+  
 }

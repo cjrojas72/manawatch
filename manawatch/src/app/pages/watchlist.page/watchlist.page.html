@@ -1,0 +1,11 @@
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div class="lg:col-span-8 bg-[#16161a] border border-white/5 rounded-3xl p-6 shadow-xl h-fit">
+        <app-price-chart [title]="selectedCardId()"></app-price-chart>
+    </div>
+    <div class="lg:col-span-4">
+        <app-watchlist-list 
+            [(selectedCardId)]="selectedCardId"
+            (selectedCardIdChange)="logChange($event)"
+        ></app-watchlist-list>
+    </div>
+</div>   

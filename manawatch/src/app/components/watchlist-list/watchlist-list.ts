@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal, computed, model } from '@angular/core';
 import { WatchlistService } from '../../services/watchlist.service';
 import { Subscription } from 'rxjs';
 
@@ -10,10 +10,14 @@ import { Subscription } from 'rxjs';
 })
 export class WatchlistList implements OnInit, OnDestroy {
 
-   private watchlistService = inject(WatchlistService);
-   private subscription!: Subscription;
+  private watchlistService = inject(WatchlistService);
+  private subscription!: Subscription;
 
-   watchlist = signal<any[]>([
+  selectedCardId = model<string | null>(null);
+  currentPage = signal(1);
+  pageSize = signal(5);
+
+  watchlist = signal<any[]>([
      { id: '1', name: 'Sheoldred, the Apocalypse', set_name: 'DMU', price: '94.50', change: '+$12.40 (15%)', image: '' },
     { id: '2', name: 'Mox Amber', set_name: 'DOM', price: '48.20', change: '+$8.15 (20%)', image: '' },
     { id: '3', name: 'The One Ring', set_name: 'LTR', price: '102.00', change: '+$5.50 (5%)', image: '' },
@@ -22,29 +26,53 @@ export class WatchlistList implements OnInit, OnDestroy {
     { id: '6', name: 'Esper Sentinel', set_name: 'MH2', price: '34.90', change: '+$3.10 (9%)', image: '' },
     { id: '7', name: 'Ragavan, Nimble Pilferer', set_name: 'MH2', price: '44.50', change: '+$2.80 (6%)', image: '' },
     { id: '8', name: 'Dockside Extortionist', set_name: 'C19', price: '98.00', change: '+$2.50 (3%)', image: '' }
-   ]);
+  ]);
 
-   async getWatchlist() {
+  paginatedWatchlist = computed(() => {
+    const startIndex = (this.currentPage() - 1) * this.pageSize();
+    return this.watchlist().slice(startIndex, startIndex + this.pageSize());
+  });
+
+  totalPages = computed(() => Math.ceil(this.watchlist().length / this.pageSize()));
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.set(this.currentPage() + 1);
+    }
+  }
+
+  prevPage(){
+    if (this.currentPage() > 1) {
+      this.currentPage.set(this.currentPage() - 1);
+    }
+  }
+
+
+  async getWatchlist() {
     const cards = await this.watchlistService.getWatchlistCards();
     this.watchlist.set(cards);
-   }
+  }
 
-   async removeCard(cardId: string) {
+  async removeCard(cardId: string) {
     await this.watchlistService.removeCardFromWatchlist(cardId);
-    this.getWatchlist();
-   }
+    await this.getWatchlist();
 
-   ngOnInit(): void {
+    if (this.paginatedWatchlist().length === 0 && this.currentPage() > 1) {
+      this.prevPage();
+    }
+  }
+
+  ngOnInit(): void {
     this.getWatchlist();
 
     this.subscription = this.watchlistService.cardAdded$.subscribe(() => {
       this.getWatchlist();
     });
-   }
+  }
 
-   ngOnDestroy(): void {
+  ngOnDestroy(): void {
      if (this.subscription) {
        this.subscription.unsubscribe();
      }
-   }
+  }
 }

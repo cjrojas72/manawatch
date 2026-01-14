@@ -2,7 +2,7 @@
     <header>
         <app-header></app-header>
     </header>
-    <main class="max-w-6xl mx-auto">
+    <main class="max-w-7xl mx-auto">
         <section id="search-section" class="mb-12">
             <app-card-searchbar></app-card-searchbar>
         </section>
@@ -27,7 +27,7 @@
             </div>
             
             <section id="portfolio-section" [hidden]="activeTab() !== 'portfolio'">
-                <app-watchlist-list></app-watchlist-list>
+                <app-watchlist-page></app-watchlist-page>
             </section>
 
             <section id="market-section"  [hidden]="activeTab() !== 'market'">

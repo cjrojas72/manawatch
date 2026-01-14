@@ -6,11 +6,11 @@ import { TrendingList } from '../../components/trending-list/trending-list';
 import { SearchResults } from '../../components/search-results/search-results';
 import { Subscription } from 'rxjs';
 import { SearchqueryEvent } from '../../services/searchquery.event';
-import { WatchlistList } from '../../components/watchlist-list/watchlist-list';
+import { WatchlistPage } from '../watchlist.page/watchlist.page';
 
 @Component({
   selector: 'app-home',
-  imports: [CardSearchbar, Header, ToptenList,TrendingList, SearchResults, WatchlistList],
+  imports: [CardSearchbar, Header, ToptenList,TrendingList, SearchResults, WatchlistPage],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

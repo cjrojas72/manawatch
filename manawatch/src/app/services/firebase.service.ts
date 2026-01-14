@@ -24,7 +24,7 @@ export class FirebaseService {
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
-        return querySnapshot.docs[0].data();
+        return querySnapshot .docs[0].data();
       }
     } catch (error) {
       console.error("Error fetching latest market data:", error);
