@@ -9,7 +9,7 @@
         type="text" 
         placeholder="Search cards for market analysis..."
         class="w-full bg-transparent border-none py-5 px-5 text-white placeholder:text-slate-600 focus:outline-none font-medium text-lg"
-        (keydown.enter)="executeSearch(searchControl.value?.toString() || '')"
+        (keydown.enter)="executeSearch(searchQuery())"
       />
       @if (isLoading()) {
         <div class="pr-5">
