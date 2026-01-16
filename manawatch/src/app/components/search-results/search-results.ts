@@ -14,23 +14,27 @@ export class SearchResults implements OnInit, OnDestroy {
   searchResults = signal<any[]>([]);
   scryFallService = inject(ScryfallService);
   watchlistService = inject(WatchlistService);
+  showResults = signal(false);
 
   private searchSub?: Subscription;
   private searchEvent = inject(SearchqueryEvent); 
 
   executeSearch(queryStr: string) {
     if (!queryStr){
-      this.clearResults();
+      // this.clearResults();
       return;
     }
     this.scryFallService.searchCards(queryStr).subscribe(cards => {
       this.searchResults.set(cards);
       console.log(cards);
     });
+
+    this.showResults.set(true);
   }
 
   clearResults() {
     this.searchResults.set([]);
+    this.showResults.set(false);
   }
 
   async addCardToWatchlist(card: any) {
