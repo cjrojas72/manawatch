@@ -47,6 +47,11 @@ export class WatchlistList implements OnInit, OnDestroy {
     }
   }
 
+  selectItem(cardId: string | null) {
+    this.selectedCardId.set(cardId);
+    this.watchlistService.updateWatchlistItem(cardId);
+  }
+
 
   async getWatchlist() {
     const cards = await this.watchlistService.getWatchlistCards();

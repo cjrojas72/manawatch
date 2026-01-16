@@ -7,7 +7,7 @@
                     <div class="flex items-start gap-4 p-3 hover:bg-white/5 rounded-xl transition-all cursor-pointer group"
                       [class.border-indigo-400]="selectedCardId() === card.id"
                       [class.border-1]="selectedCardId() === card.id"
-                      (click)="selectedCardId.set(card.id)"
+                      (click)="selectItem(card.id)"
                     >
                         <img [src]="card.image_uris?.small" class="w-12 h-16 object-contain rounded shadow hidden" alt="{{ card.name}}">
                         <div class="flex-grow min-w-0">
