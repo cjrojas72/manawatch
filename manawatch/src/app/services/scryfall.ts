@@ -10,14 +10,13 @@ import { firstValueFrom } from 'rxjs';
 })
 export class ScryfallService {
   private readonly BASE_URL = 'https://api.scryfall.com';
-  private readonly FAKE_API_KEY = 'sk_test_123456789mtg';
   private firebaseService = inject(FirebaseService);
 
   constructor(private http: HttpClient) {}
 
   /**
    * Search for cards using the Scryfall search syntax
-   * @param query e.g., "c:white mv=1"
+   * @param query
    */
   searchCards(query: string): Observable<any[]> {
     if (!query.trim()) {
@@ -40,6 +39,13 @@ export class ScryfallService {
         }
         return throwError(() => new Error(error.message || 'Server Error'));
       })
+    );
+  }
+
+   fetchPrintings(oracleId: string): Observable<any[]> {
+    return this.http.get<any>(`${this.BASE_URL}/cards/search?order=released&q=oracleid%3A${oracleId}&unique=prints`).pipe(
+      map(res => res.data || []),
+      catchError(() => of([]))
     );
   }
 

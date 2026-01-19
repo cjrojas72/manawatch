@@ -1,7 +1,9 @@
-import { Component, input, OnInit, ViewChild, ElementRef, effect, inject, signal, Input } from '@angular/core';
+import { Component, input, OnInit, ViewChild, ElementRef, effect, inject, signal, Input, OnDestroy } from '@angular/core';
 import { Chart, registerables, ChartConfiguration, ActiveElement } from 'chart.js';
 import { WatchlistService } from '../../services/watchlist.service';
 import { DecimalPipe } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { Subscription } from 'rxjs';
 
 
 Chart.register(...registerables);
@@ -9,9 +11,11 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-price-chart',
   imports: [DecimalPipe],
-  standalone: true, // Standard for Signal-based apps
+  standalone: true,
   template: `
-    <div class="bg-[#16161a] border border-white/5 rounded-3xl p-8 shadow-2xl">
+    <div 
+      [class.animate-pulse]="isloading() == true"
+      class="bg-[#16161a] border border-white/5 rounded-3xl p-8 shadow-2xl">
        <div class="flex items-start justify-between mb-8">
                 <div>
                   <h2 class="text-2xl font-black text-white tracking-tight leading-none mb-3">
@@ -23,7 +27,7 @@ Chart.register(...registerables);
                 </div>
                 <div class="text-right">
                   <p class="text-3xl font-mono font-black text-white leading-none mb-1">
-                    $\{{ todayValue() | number:"3.2-2" }}
+                    $\{{ todayValue() | number:"1.2-2" }}
                   </p>
                   <p class="text-s font-bold text-emerald-400 font-mono"
                     [class.text-emerald-400]="priceDiffStyle() == 'plus'"
@@ -39,11 +43,11 @@ Chart.register(...registerables);
       <div class="grid grid-cols-2 md:grid-cols-5 gap-6 pt-8 border-t border-white/5">
                 <div class="flex flex-col">
                   <span class="text-[11px] font-black text-slate-600 uppercase tracking-widest mb-1">90 Day High</span>
-                  <span class="text-sm font-mono font-bold text-white">$\{{ maxValue() | number:"3.2-2" }}</span>
+                  <span class="text-sm font-mono font-bold text-white">$\{{ maxValue() | number:"1.2-2" }}</span>
                 </div>
                 <div class="flex flex-col">
                   <span class="text-[11px] font-black text-slate-600 uppercase tracking-widest mb-1">90 Day Low</span>
-                  <span class="text-sm font-mono font-bold text-white">$\{{ minValue() | number:"3.2-2" }}</span>
+                  <span class="text-sm font-mono font-bold text-white">$\{{ minValue() | number:"1.2-2" }}</span>
                 </div>
                 <div class="flex flex-col">
                   <span class="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">CCY</span>
@@ -55,7 +59,7 @@ Chart.register(...registerables);
                 </div>
                 <div class="flex flex-col">
                   <span class="text-[11px] font-black text-slate-600 uppercase tracking-widest mb-1">Today</span>
-                  <span class="text-sm font-mono font-bold">$\{{ todayValue() | number:"3.2-2" }}</span>
+                  <span class="text-sm font-mono font-bold">$\{{ todayValue() | number:"1.2-2" }}</span>
                 </div>
               </div>
     </div>
@@ -70,10 +74,19 @@ Chart.register(...registerables);
     }
   `]
 })
-export class PriceChartComponent implements OnInit {
+export class PriceChartComponent implements OnInit, OnDestroy {
+
+  private _cardId: string = '';
+  @Input() set cardId(value: string | undefined) {
+    //console.log('Setter received:', value);
+    if (!value) return;
+    this._cardId = value;
+    this.refreshChart(value);
+  }
+  get cardId(): string { return this._cardId; }
 
   @Input() mode: 'watchlist' | 'detail' = 'watchlist';
-  @Input() detailCardId?: string;
+
 
   title = signal('Price Chart Signal');
   labels = signal<string[]>(['Jan 4', 'Jan 5', 'Jan 6', 'Jan 7', 'Jan 8', 'Jan 9', 'Jan 10']);
@@ -87,29 +100,28 @@ export class PriceChartComponent implements OnInit {
   priceDiff = signal("+ $142.50 (4.2%)");
   
   priceDiffStyle = signal("plus");
+  isloading = signal(false);
 
 
   private watchListService = inject(WatchlistService);
+  private watchlistSub?: Subscription;
+  
 
   @ViewChild('priceChart', { static: true }) chartCanvas!: ElementRef;
   private chart?: Chart;
 
   constructor() {
-    // 2. Setup an effect to react to Signal changes
     effect(() => {
       if (this.chart) {
-        // Access signals using ()
-        this.chart.data.labels = this.labels();
-        this.chart.data.datasets[0].data = this.dataPoints();
-        // this.chart.data.datasets[0].label = this.title();
+        const labels = this.labels();
+        const data = this.dataPoints();
         
-        // Update the chart visually
+        this.chart.data.labels = labels;
+        this.chart.data.datasets[0].data = data;
         this.chart.update();
       }
     });
   }
-
- 
 
   private createChart() {
     const config: ChartConfiguration<'line'> = {
@@ -174,7 +186,7 @@ export class PriceChartComponent implements OnInit {
 
     this.watchListService.getWatchlistCards().then(cards => {
 
-      console.log(cards.length);
+      //console.log(cards.length);
 
       if(cards.length < 1){
         this.title.set('Total Watchlist Value');
@@ -206,7 +218,6 @@ export class PriceChartComponent implements OnInit {
       const aggregatedDates = sortedDates;
       const aggregatedPrices = sortedDates.map(date => totalsByDate.get(date)!);
 
-      // 4. Update signals to refresh the chart
       this.title.set('Total Watchlist Value');
       this.labels.set(aggregatedDates);
       this.dataPoints.set(aggregatedPrices);
@@ -226,72 +237,68 @@ export class PriceChartComponent implements OnInit {
     });
   }
 
-  calcDiff(currentPrice: number){
-    const prevPrice = this.dataPoints()[this.dataPoints().length - 2];
-
-    let priceDiffVal = Math.abs((currentPrice - prevPrice)).toFixed(2);
-    let percentChange = (((currentPrice - prevPrice)/prevPrice) * 100).toFixed(2);
-
-    if(currentPrice > prevPrice){
-      this.priceDiff.set(` + ${priceDiffVal} (${percentChange}%)`);
-      this.priceDiffStyle.set('plus');
-    } else if(currentPrice < prevPrice){
-      this.priceDiff.set(` - ${priceDiffVal} (${percentChange}%)`);
-      this.priceDiffStyle.set('minus');
-    } else if(currentPrice === prevPrice){
-      this.priceDiff.set(` + ${priceDiffVal} (${percentChange}%)`);
-      this.priceDiffStyle.set('plus');
+  async refreshChart(id: string) {
+    this.isloading.set(true);
+    try {
+      const res = await this.watchListService.getPriceHistory(id);
+      if (res) {
+        this.setCardData(res);
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+    } finally {
+      this.isloading.set(false);
     }
+  }
+
+  setCardData(res: any){
+    const prices = res?.prices.map((p: any) => p.price) || [];
+    const dates = res?.prices.map((p: any) => p.date) || [];
+
+    this.title.set(res?.name || 'Price Chart');
+    this.labels.set(dates);
+    this.dataPoints.set(prices);
+
+    if (prices.length > 0) {
+      this.maxValue.set(Math.max(...prices));
+      this.minValue.set(Math.min(...prices));
+      this.todayValue.set(prices[prices.length - 1]);
+      this.lastestDate.set(dates[dates.length - 1]);
+      this.calcDiff(this.todayValue());
+    }
+  }
+
+  calcDiff(currentPrice: number){
+    const history = this.dataPoints();
+    if (history.length < 2) return;
+
+    const prevPrice = history[history.length - 2];
+    const diff = currentPrice - prevPrice;
+    const percent = ((diff / prevPrice) * 100).toFixed(2);
+    const absDiff = Math.abs(diff).toFixed(2);
+
+    this.priceDiffStyle.set(diff >= 0 ? 'plus' : 'minus');
+    this.priceDiff.set(`${diff >= 0 ? '+' : '-'} $${absDiff} (${percent}%)`);
   }
 
    ngOnInit() {
 
-    if(this.mode == "watchlist"){
-       this.watchListService.watchlistItemSelected$.subscribe((cardId) => {
-      if (!cardId) return;
-      //this.title.set(cardId ? `Price Chart for Card ID: ${cardId}` : 'Price Chart');
-      //console.log('Selected card ID in PriceChartComponent:', cardId);
-      this.watchListService.getPriceHistory(cardId || '').then(res => {
-        console.log('Price history result:', res);
-        this.title.set(res?.name || 'Price Chart');
-        this.labels.set(res?.prices.map((p: any) => p.date) || []);
-        this.dataPoints.set(res?.prices.map((p: any) => p.price) || []);
-
-        this.maxValue.set(Math.max(...this.dataPoints()));
-        this.minValue.set(Math.min(...this.dataPoints()));
-        
-        const currentPrices = this.dataPoints();
-        const currentDate = this.labels();
-
-        this.todayValue.set(currentPrices[currentPrices.length -1]);
-        this.lastestDate.set(currentDate[currentDate.length - 1]);
-
-        const todayVal = this.todayValue();
-        
-        this.calcDiff(todayVal);
-        //console.log(this.lastestDate());
-        
-      });
-
-    });
-
-    this.loadWatchlistAll('all');
-
-    } else if(this.mode == "detail"){
-      this.watchListService.getPriceHistory(this.detailCardId ? this.detailCardId: '').then(res =>{
-        console.log('Price history result:', res);
-        this.title.set(res?.name || 'Price Chart');
-        this.labels.set(res?.prices.map((p: any) => p.date) || []);
-        this.dataPoints.set(res?.prices.map((p: any) => p.price) || []);
-        this.lastestDate.set(this.labels()[this.labels.length - 1]);
-        console.log('showing ' + this.lastestDate());
-      });
-    }
-
-   
-
-    
-
     this.createChart();
+    if (this.mode === 'watchlist') {
+      this.watchlistSub = this.watchListService.watchlistItemSelected$.subscribe(id => {
+        if (id) this.refreshChart(id);
+      });
+      this.loadWatchlistAll('all');
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.watchlistSub) {
+      this.watchlistSub.unsubscribe();
+    }
+    
+    if (this.chart) {
+      this.chart.destroy();
+    }
   }
 }

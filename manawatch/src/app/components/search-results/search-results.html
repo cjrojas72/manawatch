@@ -33,8 +33,13 @@
                             ${{ card.prices?.usd }}
                         }
                         </span>
-                        <button (click)="addCardToWatchlist(card)" class="p-2 bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/10 cursor-pointer border border-indigo-500/20">
+                        <!-- <button (click)="addCardToWatchlist(card)" class="p-2 bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/10 cursor-pointer border border-indigo-500/20">
                           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                        </button> -->
+                        <button 
+                          (click)="selectCardDetails(card.id)"
+                          class="p-2 bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/10 cursor-pointer border border-indigo-500/20 text-[12px]">
+                            View Details
                         </button>
                       </div>
                     </div>

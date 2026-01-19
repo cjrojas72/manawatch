@@ -1,16 +1,14 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { CardSearchbar } from '../../components/card-searchbar/card-searchbar';
 import { Header } from '../../components/header/header';
-import { ToptenList } from '../../components/topten-list/topten-list';
-import { TrendingList } from '../../components/trending-list/trending-list';
-import { SearchResults } from '../../components/search-results/search-results';
 import { Subscription } from 'rxjs';
 import { SearchqueryEvent } from '../../services/searchquery.event';
 import { WatchlistPage } from '../watchlist.page/watchlist.page';
+import { MarketPage } from '../market-page/market.page';
 
 @Component({
   selector: 'app-home',
-  imports: [CardSearchbar, Header, ToptenList,TrendingList, SearchResults, WatchlistPage],
+  imports: [CardSearchbar, Header, MarketPage, WatchlistPage],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

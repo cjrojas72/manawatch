@@ -11,6 +11,9 @@ export class SearchqueryEvent {
   private tabChangeSource = new Subject<string>();
   tabChange$ = this.tabChangeSource.asObservable();
 
+  private cardSelectSource = new Subject<string>();
+  cardSelect$ = this.cardSelectSource.asObservable();
+
   publishSearch(query: string) {
     if (query) {
       this.searchSource.next(query);
@@ -19,6 +22,11 @@ export class SearchqueryEvent {
 
   selectTab(tabName: string) {
     this.tabChangeSource.next(tabName);
+  }
+
+  selectCard(cardId: string){
+    //console.log("Selected: " + cardId);
+    this.cardSelectSource.next(cardId);
   }
 
   

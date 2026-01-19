@@ -21,15 +21,19 @@ export class SearchResults implements OnInit, OnDestroy {
 
   executeSearch(queryStr: string) {
     if (!queryStr){
-      // this.clearResults();
       return;
     }
     this.scryFallService.searchCards(queryStr).subscribe(cards => {
       this.searchResults.set(cards);
-      console.log(cards);
+      //console.log(cards);
     });
 
     this.showResults.set(true);
+  }
+
+  selectCardDetails(cardId: string){
+    this.searchEvent.selectCard(cardId);
+    this.showResults.set(false);
   }
 
   clearResults() {
@@ -38,8 +42,7 @@ export class SearchResults implements OnInit, OnDestroy {
   }
 
   async addCardToWatchlist(card: any) {
-    // Placeholder for adding card to watchlist functionality
-    console.log('Adding card to watchlist:', card);
+    //console.log('Adding card to watchlist:', card);
     await this.watchlistService.addCardToWatchlist(card);
     this.watchlistService.emitCardAdded();
   }
