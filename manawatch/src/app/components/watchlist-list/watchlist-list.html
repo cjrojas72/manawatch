@@ -31,7 +31,18 @@
                             {{ card.prices?.usd }}
                         }
                         </span>
-                        <button (click)="removeCard(card.id)" class="text-[9px] text-red-500/50 hover:text-red-500 uppercase font-bold tracking-widest cursor-pointer">Remove</button>
+                        <div class="flex items-center gap-3">
+                          <button (click)="navigateToCardDetails(card.id)" 
+                                  class="text-amber-500 hover:text-indigo-400 transition-colors cursor-pointer">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                          </button>
+
+                          <button (click)="removeCard(card.id)" 
+                                  class="text-red-400 hover:text-red-500 transition-colors cursor-pointer">
+                            <i class="fa-solid fa-trash-can"></i>
+                          </button>
+                        </div>
+                        <!-- <button (click)="removeCard(card.id)" class="text-[9px] text-red-500/50 hover:text-red-500 uppercase font-bold tracking-widest cursor-pointer">Remove</button> -->
                     </div>
                   } @empty {
                     <div class="py-20 text-center">

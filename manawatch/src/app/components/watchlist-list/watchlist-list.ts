@@ -1,6 +1,7 @@
 import { Component, inject, OnDestroy, OnInit, signal, computed, model } from '@angular/core';
 import { WatchlistService } from '../../services/watchlist.service';
 import { Subscription } from 'rxjs';
+import { SearchqueryEvent } from '../../services/searchquery.event';
 
 @Component({
   selector: 'app-watchlist-list',
@@ -12,6 +13,8 @@ export class WatchlistList implements OnInit, OnDestroy {
 
   private watchlistService = inject(WatchlistService);
   private subscription!: Subscription;
+
+  private searchQueryEvent = inject(SearchqueryEvent);
 
   selectedCardId = model<string | null>(null);
   currentPage = signal(1);
@@ -50,6 +53,11 @@ export class WatchlistList implements OnInit, OnDestroy {
   selectItem(cardId: string | null) {
     this.selectedCardId.set(cardId);
     this.watchlistService.updateWatchlistItem(cardId);
+  }
+
+  navigateToCardDetails(cardId: string){
+    this.searchQueryEvent.selectCard(cardId);
+    this.searchQueryEvent.selectTab("market");
   }
 
 

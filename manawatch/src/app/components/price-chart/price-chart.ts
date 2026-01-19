@@ -19,7 +19,11 @@ Chart.register(...registerables);
        <div class="flex items-start justify-between mb-8">
                 <div>
                   <h2 class="text-2xl font-black text-white tracking-tight leading-none mb-3">
-                    {{ title() }}
+                    {{ title() }} 
+
+                    @if(setCode()){
+                      - <span class="text-slate-400 text-lg"> {{ setCode() }} </span>
+                    }
                   </h2>
                   <p class="text-[12px] font-bold text-slate-500 uppercase tracking-widest">
                     As of {{ lastestDate() }}
@@ -89,6 +93,7 @@ export class PriceChartComponent implements OnInit, OnDestroy {
 
 
   title = signal('Price Chart Signal');
+  setCode = signal('');
   labels = signal<string[]>(['Jan 4', 'Jan 5', 'Jan 6', 'Jan 7', 'Jan 8', 'Jan 9', 'Jan 10']);
   dataPoints = signal<number[]>([12.50, 12.75, 12.40, 13.10, 13.50, 13.20, 13.80]);
   // testData = signal<any[]>([]);
@@ -256,6 +261,7 @@ export class PriceChartComponent implements OnInit, OnDestroy {
     const dates = res?.prices.map((p: any) => p.date) || [];
 
     this.title.set(res?.name || 'Price Chart');
+    this.setCode.set(res?.setCode);
     this.labels.set(dates);
     this.dataPoints.set(prices);
 

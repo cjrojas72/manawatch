@@ -10,7 +10,11 @@
         <div class="my-3">
             <button
                 (click)="onBackBtnSelect()" 
-                class="px-6 py-3 text-xs text-white uppercase tracking-widest hover:bg-amber-500 shadow-amber-900/20 transition-all active:scale-95">&larr; Back to dashboard</button>
+                class="px-6 py-3 text-xs text-white uppercase rounded-xl hover:bg-amber-500 shadow-amber-900/20 transition-all active:scale-95 cursor-pointer"
+            > 
+                <i class="fa-solid fa-angle-left"></i>
+                Back to dashboard
+            </button>
         </div>
         <app-card-detail-page [cardId]="cardId()"></app-card-detail-page>
     }
