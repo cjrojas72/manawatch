@@ -7,7 +7,6 @@
         min-height: 200px;
       }
 
-      /* Simplified Overlay Box with Lines */
       .animate-pulse::before {
         content: "";
         position: absolute;
@@ -46,3 +45,68 @@
 
       .animate-in { animation: slideUp 0.4s ease-out forwards; }
       @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+
+
+/* .hot-toast-bar-base-container {
+  position: relative !important; 
+  inset: auto !important; 
+  width: 350px !important; 
+  max-width: 100% !important;
+  
+  
+  pointer-events: none !important;
+  
+
+  --hot-toast-scale: 1 !important; 
+  transition: none !important;
+  transform: none !important;
+}
+
+.hot-toast-bar-base {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  min-height: 48px !important;
+  padding: 0.75rem 1.25rem !important;
+  
+
+  border: 1px solid rgba(251, 191, 36, 0.2) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
+  
+ 
+  pointer-events: none !important;
+  user-select: none !important;
+
+
+  animation-fill-mode: forwards !important;
+  animation: 
+    toastEnter 350ms ease-out forwards,
+    toastExit 400ms ease-in 3000ms forwards !important;
+}
+
+
+@keyframes toastEnter {
+  from {
+    transform: translateY(20px) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+
+@keyframes toastExit {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}  */

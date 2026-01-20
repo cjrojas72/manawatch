@@ -147,8 +147,8 @@ export class PriceChartComponent implements OnInit, OnDestroy {
         datasets: [{
           //label: this.title(),
           data: this.dataPoints(),
-          borderColor: 'oklch(67.3% 0.182 276.935)',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderColor: this.mode == 'detail' ? 'oklch(76.9% 0.184 81.3)' : 'oklch(67.3% 0.182 276.935)',
+          backgroundColor: this.mode == 'detail' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(59, 130, 246, 0.1)',
           fill: true,
           tension: 0.4,
           pointRadius: 0,

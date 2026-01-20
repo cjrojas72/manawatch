@@ -22,6 +22,7 @@ export class CardDetailPage implements OnInit {
   cardDetails = signal<any>([]);
   isLoading = signal(false);
   printings = signal<any>([]);
+  disableBtn = signal(false);
 
   sales = [
     { id: 1, condition: 'Near Mint', date: 'JAN 16', platform: 'TCGPLAYER', price: 14250.00 },
@@ -36,6 +37,7 @@ export class CardDetailPage implements OnInit {
     this._cardId = value;
     if (value) {
       this.fetchCardData(value);
+      this.checkWatchlistStatus();
     }
   }
   get cardId() { return this._cardId; }
@@ -59,6 +61,12 @@ export class CardDetailPage implements OnInit {
     });
   }
 
+  async checkWatchlistStatus() {
+    const cards = await this.watchlistService.getWatchlistCards();
+    const exists = cards.some(c => c.id === this.cardId);
+    this.disableBtn.set(exists);
+  }
+
   addCardToWatchlist(card: any){
     this.watchlistService.addCardToWatchlist(card);
   }
@@ -71,7 +79,14 @@ export class CardDetailPage implements OnInit {
 
     if(this.cardId){
       this.fetchCardData(this.cardId);
+
+      this.checkWatchlistStatus();
+      this.watchlistService.cardAdded$.subscribe(() => {
+        this.checkWatchlistStatus();
+      });
     }
   }
+
+
   
 }

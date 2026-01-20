@@ -8,26 +8,34 @@
           <div class="flex items-center gap-3">
             <span class="text-[10px] px-2 py-0.5 bg-white/5 border border-white/10 rounded text-amber-500 font-bold uppercase tracking-wider">{{ cardDetails().rarity }}</span>
             @if (cardDetails().foil){
-                <span class="text-[10px] px-2 py-0.5 bg-white/5 border border-white/10 rounded text-indigo-400 font-bold uppercase tracking-wider">Foil</span>
+                <span class="text-[10px] px-2 py-0.5 bg-white/5 border border-white/10 rounded text-amber-500 font-bold uppercase tracking-wider">Foil</span>
             }
             @if (cardDetails().game_changer){
-                <span class="text-[10px] px-2 py-0.5 bg-white/5 border border-white/10 rounded text-indigo-400 font-bold uppercase tracking-wider">Game Changer</span>
+                <span class="text-[10px] px-2 py-0.5 bg-white/5 border border-white/10 rounded text-amber-500 font-bold uppercase tracking-wider">Game Changer</span>
             }
             @if (cardDetails().reserved){
-                <span class="text-[10px] px-2 py-0.5 bg-white/5 border border-white/10 rounded text-indigo-400 font-bold uppercase tracking-wider">Reserved List</span>
+                <span class="text-[10px] px-2 py-0.5 bg-white/5 border border-white/10 rounded text-amber-500 font-bold uppercase tracking-wider">Reserved List</span>
             }
 
             
-            <span class="text-[10px] px-2 py-0.5 bg-white/5 border border-white/10 rounded text-indigo-400 font-bold uppercase tracking-wider">#{{ cardDetails().collector_number }} </span>
+            <span class="text-[10px] px-2 py-0.5 bg-white/5 border border-white/10 rounded text-amber-500 font-bold uppercase tracking-wider">#{{ cardDetails().collector_number }} </span>
           </div>
         </div>
 
         <div class="flex items-center gap-3">
-          <button 
-            (click)="addCardToWatchlist(cardDetails())"
-            class="px-6 py-3 rounded-xl bg-amber-600 text-black text-xs font-black uppercase tracking-widest hover:bg-amber-500 shadow-xl shadow-amber-900/20 transition-all active:scale-95 cursor-pointer">
-            Add to Wathlist
-          </button>
+          @if(!disableBtn()){
+            <button 
+              (click)="addCardToWatchlist(cardDetails())"
+              class="flex items-center gap-1 px-6 py-3 rounded-xl bg-amber-600 text-black text-xs font-black uppercase tracking-widest hover:bg-amber-500 shadow-xl shadow-amber-900/20 transition-all active:scale-95 cursor-pointer">
+              <i class="fa-solid fa-plus"></i>
+              Add to Wathlist
+            </button>
+          } @else{
+            <button class="px-6 py-3 rounded-xl bg-amber-900/40 text-amber-200/50 border border-amber-900/50 text-xs font-black uppercase tracking-widest shadow-none cursor-not-allowed transition-none">
+              Card In watchlist
+            </button>
+          }
+          
         </div>
       </div>
 

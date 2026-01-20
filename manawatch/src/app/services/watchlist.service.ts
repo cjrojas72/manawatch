@@ -8,6 +8,7 @@ import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { MtgJsonService } from './mtgjson.service';
 import { map } from 'rxjs/operators';
 import { FirebaseService } from './firebase.service';
+import { HotToastService } from '@ngxpert/hot-toast';
 
 
 type mockData = {
@@ -27,6 +28,7 @@ export class WatchlistService {
   private db = getFirestore(this.app, "watchlist");
   private auth = getAuth(this.app);
   private firebaseService = inject(FirebaseService);
+  private toast = inject(HotToastService);
 
   private mtgJsonService = new MtgJsonService();
 
@@ -35,6 +37,7 @@ export class WatchlistService {
   private cardAddedSource = new Subject<void>();
   private watchlistItemSelected = new BehaviorSubject<string | null>(null);
   
+
   cardAdded$ = this.cardAddedSource.asObservable();
   watchlistItemSelected$ = this.watchlistItemSelected.asObservable();
 
@@ -154,7 +157,7 @@ export class WatchlistService {
   async addCardToWatchlist(card: any) {
     
     if (!this.userId()) {
-      alert("Please log in to add cards to a watchlist. ")
+      this.errorToast('You must be logged in to add a card');
       console.error("No userId provided");
       return;
     }
@@ -174,6 +177,7 @@ export class WatchlistService {
       if (!checkDocSnap.empty) {
         console.log("Card already exists in watchlist!");
         alert("Card already exists in watchlist!");
+        this.errorToast('Card already exists in watchlist!');
         return;
       }
 
@@ -185,10 +189,12 @@ export class WatchlistService {
       });
       
       this.emitCardAdded();
-      return console.log(`Card ${card.name} added to watchlist.`);
+      this.toast.success('Added to watchlist!');
+      return;
      
     } catch (error) {
       console.error("Error adding card to watchlist:", error);
+      this.errorToast('Could not add card. Try again.');
       return;
     }
   }
@@ -207,11 +213,58 @@ export class WatchlistService {
     try {
       await deleteDoc(cardDocRef);
       console.log(`Card ${cardId} removed from watchlist.`);
+      this.infoToast('Card removed from watchlist');
       this.emitCardAdded();
     } catch (error) {
       console.error("Error removing card from watchlist:", error);
+      this.errorToast('Error removing card');
+      return;
     }
   }
 
+  successToast(msg: string){
+    this.toast.success( msg, {
+        style: {
+            background: 'hsl(143, 85%, 96%)',
+            borderColor: 'hsl(145, 92%, 87%)',
+            color: 'hsl(140, 100%, 27%)',
+          },
+          iconTheme: {
+            primary: 'hsl(140, 100%, 27%)',
+            secondary: 'hsl(143, 85%, 96%)',
+          },
+          icon: '<i class="fa-regular fa-circle-check"></i>'
+    })
+  }
+
+  infoToast(msg: string){
+    this.toast.info( msg, {
+       style: {
+            background: 'hsl(208, 100%, 97%)',
+            borderColor: 'hsl(221, 91%, 93%)',
+            color: 'hsl(210, 92%, 45%)',
+          },
+          iconTheme: {
+            primary: 'hsl(210, 92%, 45%)',
+            secondary: 'hsl(208, 100%, 97%)',
+          },
+          icon: '<i class="fa-solid fa-circle-info"></i>',
+    })
+  }
+
+  errorToast(msg: string){
+    this.toast.error( msg, {
+        style: {
+            background: 'hsl(359, 100%, 97%)',
+            borderColor: 'hsl(359, 100%, 94%)',
+            color: 'hsl(360, 100%, 45%)',
+          },
+          iconTheme: {
+            primary: 'hsl(360, 100%, 45%)',
+            secondary: 'hsl(359, 100%, 97%)',
+          },
+          icon: '<i class="fa-solid fa-circle-info"></i>',
+    })
+  }
   
 }

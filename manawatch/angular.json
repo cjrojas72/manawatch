@@ -25,6 +25,7 @@
               }
             ],
             "styles": [
+              "@ngxpert/hot-toast/styles.css",
               "src/styles.css",
               "src/assets/fontawesome/css/all.min.css"
             ]
