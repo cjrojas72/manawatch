@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axios from 'axios/dist/node/axios.cjs';
+// import axios from 'axios';
 
 export default async function handler(req, res) {
   const token = process.env.MTGJSON_TOKEN;
