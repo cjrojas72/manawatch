@@ -1,10 +1,7 @@
 import axios from 'axios';
 
 export default async function handler(req, res) {
-  // 1. Authorization: Prioritize the environment variable, fallback only for testing
-  const token = process.env.MTGJSON_TOKEN || '1571cbc36270f7197a46d7203dcd0f78bb3a76d4';
-
-  // 2. Defensive Body Parsing: Ensures req.body is an object regardless of Vercel's state
+  const token = process.env.MTGJSON_TOKEN;
   const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
   const { query, variables } = body || {};
 
