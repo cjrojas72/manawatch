@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { ScryfallService } from './scryfall';
 
 describe('Scryfall', () => {
-  let service: Scryfall;
+  let service: ScryfallService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});

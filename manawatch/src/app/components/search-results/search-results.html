@@ -13,7 +13,9 @@
                   <p>No results found</p>
                 }
                 @for (card of searchResults(); track card.id) {
-                  <div class="bg-white/[0.02] border border-white/5 rounded-2xl p-4 flex gap-4 hover:border-indigo-500/50 transition-all group cursor-pointer">
+                  <div 
+                    [class.animate-pulse]="isLoading() == true" 
+                    class="bg-white/[0.02] border border-white/5 rounded-2xl p-4 flex gap-4 hover:border-indigo-500/50 transition-all group cursor-pointer">
                     <img [src]="card.image_uris?.small || (card.card_faces && card.card_faces[0].image_uris?.small)" class="w-16 h-24 object-contain rounded group-hover:scale-105 transition-transform" alt="{{ card.name }}" onerror="this.src='https://svgsilh.com/svg/147281.svg'">
                     <div class="flex flex-col justify-between flex-grow min-w-0">
                       <div>

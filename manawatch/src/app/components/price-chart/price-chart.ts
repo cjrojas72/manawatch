@@ -4,6 +4,7 @@ import { WatchlistService } from '../../services/watchlist.service';
 import { DecimalPipe } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Subscription } from 'rxjs';
+import { FirebaseService } from '../../services/firebase.service';
 
 
 Chart.register(...registerables);
@@ -98,11 +99,11 @@ export class PriceChartComponent implements OnInit, OnDestroy {
   dataPoints = signal<number[]>([12.50, 12.75, 12.40, 13.10, 13.50, 13.20, 13.80]);
   // testData = signal<any[]>([]);
 
-  maxValue = signal(90);
-  minValue = signal(10);
-  todayValue = signal(50);
+  maxValue = signal(0);
+  minValue = signal(0);
+  todayValue = signal(0);
   lastestDate = signal(new Date().getDate().toString());
-  priceDiff = signal("+ $142.50 (4.2%)");
+  priceDiff = signal("");
   
   priceDiffStyle = signal("plus");
   isloading = signal(false);
@@ -110,6 +111,7 @@ export class PriceChartComponent implements OnInit, OnDestroy {
 
   private watchListService = inject(WatchlistService);
   private watchlistSub?: Subscription;
+  private firebaseService = inject(FirebaseService)
   
 
   @ViewChild('priceChart', { static: true }) chartCanvas!: ElementRef;
@@ -124,6 +126,15 @@ export class PriceChartComponent implements OnInit, OnDestroy {
         this.chart.data.labels = labels;
         this.chart.data.datasets[0].data = data;
         this.chart.update();
+      }
+    });
+
+    effect(() => {
+      const user = this.firebaseService.currentUser();
+      if (user && this.mode === 'watchlist') {
+        this.loadWatchlistAll('all');
+      } else if (!user) {
+        this.chart?.clear();
       }
     });
   }
@@ -226,6 +237,7 @@ export class PriceChartComponent implements OnInit, OnDestroy {
       this.title.set('Total Watchlist Value');
       this.labels.set(aggregatedDates);
       this.dataPoints.set(aggregatedPrices);
+      this.setCode.set('');
 
       this.maxValue.set(Math.max(...this.dataPoints()));
       this.minValue.set(Math.min(...this.dataPoints()));
@@ -294,6 +306,12 @@ export class PriceChartComponent implements OnInit, OnDestroy {
       this.watchlistSub = this.watchListService.watchlistItemSelected$.subscribe(id => {
         if (id) this.refreshChart(id);
       });
+
+      const addSub = this.watchListService.cardAdded$.subscribe(() => {
+        this.loadWatchlistAll('all');
+      });
+      this.watchlistSub.add(addSub);
+
       this.loadWatchlistAll('all');
     }
   }

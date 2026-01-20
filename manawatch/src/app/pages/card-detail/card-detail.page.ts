@@ -61,7 +61,6 @@ export class CardDetailPage implements OnInit {
 
   addCardToWatchlist(card: any){
     this.watchlistService.addCardToWatchlist(card);
-    this.watchlistService.emitCardAdded();
   }
 
   selectCard(id: string){

@@ -15,6 +15,7 @@ export class SearchResults implements OnInit, OnDestroy {
   scryFallService = inject(ScryfallService);
   watchlistService = inject(WatchlistService);
   showResults = signal(false);
+  isLoading = signal(false);
 
   private searchSub?: Subscription;
   private searchEvent = inject(SearchqueryEvent); 
@@ -23,8 +24,10 @@ export class SearchResults implements OnInit, OnDestroy {
     if (!queryStr){
       return;
     }
+    this.isLoading.set(true);
     this.scryFallService.searchCards(queryStr).subscribe(cards => {
       this.searchResults.set(cards);
+      this.isLoading.set(false);
       //console.log(cards);
     });
 

@@ -1,4 +1,4 @@
-import { Injectable, Signal } from '@angular/core';
+import { effect, inject, Injectable, signal, Signal } from '@angular/core';
 import { collection, getDocs,query, orderBy, limit, doc, setDoc, deleteDoc, where} from "firebase/firestore"; 
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
@@ -7,6 +7,7 @@ import { getAuth } from "firebase/auth";
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { MtgJsonService } from './mtgjson.service';
 import { map } from 'rxjs/operators';
+import { FirebaseService } from './firebase.service';
 
 
 type mockData = {
@@ -25,10 +26,11 @@ export class WatchlistService {
  // Initialize Cloud Firestore and get a reference to the service
   private db = getFirestore(this.app, "watchlist");
   private auth = getAuth(this.app);
+  private firebaseService = inject(FirebaseService);
 
   private mtgJsonService = new MtgJsonService();
 
-  private userId = "test-user";
+  private userId = signal<string | null>(null);
 
   private cardAddedSource = new Subject<void>();
   private watchlistItemSelected = new BehaviorSubject<string | null>(null);
@@ -36,7 +38,18 @@ export class WatchlistService {
   cardAdded$ = this.cardAddedSource.asObservable();
   watchlistItemSelected$ = this.watchlistItemSelected.asObservable();
 
-   
+  
+  constructor() {
+    effect(() => {
+      const user = this.firebaseService.currentUser();
+      this.userId.set(user ? user.uid : null);
+      
+      if (user) {
+        console.log("WatchlistService: User switched to", user.uid);
+      }
+    });
+  }
+
   emitCardAdded() {
     this.cardAddedSource.next();
   }
@@ -68,6 +81,11 @@ export class WatchlistService {
   }
 
   getMockWatchlistPriceHistory(data: any[]): mockData[] {
+    if (!this.userId()) {
+      console.error("No userId found");
+      return [];
+    }
+
     const mockWatchlistData: mockData[] = [];
 
     data.forEach(card => {
@@ -107,13 +125,13 @@ export class WatchlistService {
 
 
   async getWatchlistCards(): Promise<Array<any>> {
-    if (!this.userId) {
+    if (!this.userId()) {
       console.error("No userId found");
       return [];
     }
 
     const q = query(
-      collection(this.db, `users/${this.userId}/watchlists/default/cards`),
+      collection(this.db, `users/${this.userId()}/watchlists/default/cards`),
       // orderBy('addedAt', 'desc'), 
       // limit(100)
     );
@@ -135,18 +153,19 @@ export class WatchlistService {
 
   async addCardToWatchlist(card: any) {
     
-    if (!this.userId) {
+    if (!this.userId()) {
+      alert("Please log in to add cards to a watchlist. ")
       console.error("No userId provided");
       return;
     }
 
     const cardDocRef = doc(
       this.db, 
-      `users/${this.userId}/watchlists/default/cards/${card.id}`
+      `users/${this.userId()}/watchlists/default/cards/${card.id}`
     );
 
     const checkDocRef = query(
-      collection(this.db, `users/${this.userId}/watchlists/default/cards`),
+      collection(this.db, `users/${this.userId()}/watchlists/default/cards`),
       where("id", "==", card.id),
     );
 
@@ -164,7 +183,10 @@ export class WatchlistService {
         priceAtTimeOfAdding: card.foil ? card.prices?.usd_foil : card.prices?.usd,
         provider: "tcgplayer"
       });
-     return console.log(`Card ${card.name} added to watchlist.`);
+      
+      this.emitCardAdded();
+      return console.log(`Card ${card.name} added to watchlist.`);
+     
     } catch (error) {
       console.error("Error adding card to watchlist:", error);
       return;
@@ -172,19 +194,20 @@ export class WatchlistService {
   }
 
   async removeCardFromWatchlist(cardId: string) {
-    if (!this.userId) {
+    if (!this.userId()) {
       console.error("No userId provided");
       return;
     } 
 
     const cardDocRef = doc(
       this.db,
-      `users/${this.userId}/watchlists/default/cards/${cardId}`
+      `users/${this.userId()}/watchlists/default/cards/${cardId}`
     );
 
     try {
       await deleteDoc(cardDocRef);
       console.log(`Card ${cardId} removed from watchlist.`);
+      this.emitCardAdded();
     } catch (error) {
       console.error("Error removing card from watchlist:", error);
     }

@@ -1,2 +1,48 @@
 /* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
+
+
+    .animate-pulse {
+        position: relative;
+        min-height: 200px;
+      }
+
+      /* Simplified Overlay Box with Lines */
+      .animate-pulse::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 50;
+        border-radius: 1.5rem;
+        pointer-events: none;
+        background-color: #09090b;
+        background-image: 
+          /* Line 1 (Main Header Placeholder) */
+          linear-gradient(rgba(255,255,255,0.08) 0 0),
+          /* Line 2 (Smaller Subtitle Placeholder) */
+          linear-gradient(rgba(255,255,255,0.05) 0 0),
+          /* Line 3 (Description Placeholder) */
+          linear-gradient(rgba(255,255,255,0.03) 0 0);
+        background-repeat: no-repeat;
+        /* Position and Size for 3 lines */
+        background-position: 
+          2rem 2rem, 
+          2rem 4.5rem, 
+          2rem 6.5rem;
+        background-size: 
+          40% 1.5rem, 
+          25% 0.75rem, 
+          60% 0.75rem;
+      }
+
+      .animate-pulse::before {
+        opacity: 1;
+        transition: opacity 0.3s ease;
+      }
+
+      :not(.animate-pulse)::before {
+        content: none;
+      }
+
+      .animate-in { animation: slideUp 0.4s ease-out forwards; }
+      @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

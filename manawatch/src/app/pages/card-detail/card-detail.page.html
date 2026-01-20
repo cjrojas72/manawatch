@@ -34,8 +34,8 @@
       <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         <!-- LEFT: Card Visual and Market Snapshot -->
-        <div class="lg:col-span-4 space-y-6" [class.animate-pulse]="isLoading() == true">
-          <div class="bg-[#16161a] p-2 rounded-[2.5rem] border border-white/5 shadow-2xl">
+        <div class="lg:col-span-4 space-y-6">
+          <div class="bg-[#16161a] p-2 rounded-[2.5rem] border border-white/5 shadow-2xl" [class.animate-pulse]="isLoading() == true" >
             <div class="relative group rounded-[2rem] overflow-hidden">
               <div class="absolute inset-0 bg-gradient-to-t from-[#16161a] via-transparent to-transparent opacity-60"></div>
               <img 
@@ -151,6 +151,7 @@
               <a 
                 href="{{ link.value }}"
                 target="_blank" 
+                [class.animate-pulse]="isLoading() == true"
                 class="flex items-center justify-between p-4 bg-[#16161a] border border-white/5 rounded-2xl hover:border-amber-500/50 hover:bg-white/[0.02] transition-all group"
               >
                 <div class="flex flex-col">
