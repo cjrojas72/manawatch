@@ -15,7 +15,7 @@ export class ToptenList implements OnInit {
 
   loadMarketData(){
     this.scryfallService.getTop10Cards().subscribe(res =>{
-      console.log(res);
+      //console.log(res);
       this.marketHighs.set(res);
     })
   }

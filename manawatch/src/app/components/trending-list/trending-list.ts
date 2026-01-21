@@ -16,7 +16,7 @@ export class TrendingList implements OnInit {
 
   loadMarketData(){
     this.scryfallService.getTrendingCards().then(res =>{
-      console.log(res);
+      //console.log(res);
       this.marketTrending.set(res);
     });
 

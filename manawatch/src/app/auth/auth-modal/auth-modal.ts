@@ -32,7 +32,6 @@ export class AuthModal {
   }, { validators: (group) => this.authMode() === 'signup' ? passwordMatchValidator(group) : null });
 
   showModal = computed(() => {
-    console.log("change");
     return this.firebaseServiceAuth.showAuthModal();
   });
 

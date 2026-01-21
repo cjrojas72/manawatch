@@ -47,9 +47,9 @@ export class WatchlistService {
       const user = this.firebaseService.currentUser();
       this.userId.set(user ? user.uid : null);
       
-      if (user) {
-        console.log("WatchlistService: User switched to", user.uid);
-      }
+      // if (user) {
+      //   console.log("WatchlistService: User switched to", user.uid);
+      // }
     });
   }
 
@@ -176,7 +176,7 @@ export class WatchlistService {
       const checkDocSnap = await getDocs(checkDocRef);
       if (!checkDocSnap.empty) {
         console.log("Card already exists in watchlist!");
-        alert("Card already exists in watchlist!");
+        //alert("Card already exists in watchlist!");
         this.errorToast('Card already exists in watchlist!');
         return;
       }
@@ -212,7 +212,7 @@ export class WatchlistService {
 
     try {
       await deleteDoc(cardDocRef);
-      console.log(`Card ${cardId} removed from watchlist.`);
+      //console.log(`Card ${cardId} removed from watchlist.`);
       this.infoToast('Card removed from watchlist');
       this.emitCardAdded();
     } catch (error) {

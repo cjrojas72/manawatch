@@ -133,7 +133,7 @@ export class PriceChartComponent implements OnInit, OnDestroy {
       const user = this.firebaseService.currentUser();
       if (user && this.mode === 'watchlist') {
         this.loadWatchlistAll('all');
-      } else if (!user) {
+      } else if (!user && this.mode === 'watchlist') {
         this.title.set('Total Watchlist Value');
         this.setCode.set('');
         this.maxValue.set(0);
