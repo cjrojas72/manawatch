@@ -93,7 +93,7 @@ export class PriceChartComponent implements OnInit, OnDestroy {
   @Input() mode: 'watchlist' | 'detail' = 'watchlist';
 
 
-  title = signal('Price Chart Signal');
+  title = signal('Price Chart');
   setCode = signal('');
   labels = signal<string[]>(['Jan 4', 'Jan 5', 'Jan 6', 'Jan 7', 'Jan 8', 'Jan 9', 'Jan 10']);
   dataPoints = signal<number[]>([12.50, 12.75, 12.40, 13.10, 13.50, 13.20, 13.80]);
@@ -134,7 +134,15 @@ export class PriceChartComponent implements OnInit, OnDestroy {
       if (user && this.mode === 'watchlist') {
         this.loadWatchlistAll('all');
       } else if (!user) {
+        this.title.set('Total Watchlist Value');
+        this.setCode.set('');
+        this.maxValue.set(0);
+        this.minValue.set(0);
+        this.todayValue.set(0);
+        this.lastestDate.set(new Date().getDate().toString());
+        this.priceDiff.set("");
         this.chart?.clear();
+        
       }
     });
   }
