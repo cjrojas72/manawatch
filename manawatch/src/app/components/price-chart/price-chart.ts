@@ -45,6 +45,45 @@ Chart.register(...registerables);
       <div class="relative w-full h-[350px] mb-8">
         <canvas #priceChart></canvas>
       </div>
+      <div class="flex items-center justify-center mb-8">
+        <div id="filter-group" class="flex gap-1 p-1 bg-white/5 border border-white/10 rounded-xl shadow-2xl backdrop-blur-md">
+            <button 
+              (click)="setFilterRange('3m')" 
+              class="filter-btn px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white cursor-pointer"
+              [class.bg-indigo-600]="filterRange() == '3m'"
+              [class.text-white]="filterRange() == '3m'"
+              >
+                3M
+            </button>
+
+            <button 
+              (click)="setFilterRange('1m')" 
+              class="filter-btn px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white cursor-pointer"
+              [class.bg-indigo-600]="filterRange() == '1m'"
+              [class.text-white]="filterRange() == '1m'"
+              >
+                1M
+            </button>
+
+            <button 
+              (click)="setFilterRange('1w')" 
+              class="filter-btn px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white cursor-pointer"
+              [class.bg-indigo-600]="filterRange() == '1w'"
+              [class.text-white]="filterRange() == '1w'"
+              >
+                1W
+            </button>
+
+            <button 
+              (click)="setFilterRange('2 day')" 
+              class="filter-btn flex items-center gap-2 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white cursor-pointer"
+              [class.bg-indigo-600]="filterRange() == '2 day'"
+              [class.text-white]="filterRange() == '2 day'"
+              >
+                2 day
+            </button>
+        </div>
+      </div>
       <div class="grid grid-cols-2 md:grid-cols-5 gap-6 pt-8 border-t border-white/5">
                 <div class="flex flex-col">
                   <span class="text-[11px] font-black text-slate-600 uppercase tracking-widest mb-1">90 Day High</span>
@@ -93,10 +132,14 @@ export class PriceChartComponent implements OnInit, OnDestroy {
   @Input() mode: 'watchlist' | 'detail' = 'watchlist';
 
 
-  title = signal('Price Chart');
+  title = signal('');
   setCode = signal('');
-  labels = signal<string[]>(['Jan 4', 'Jan 5', 'Jan 6', 'Jan 7', 'Jan 8', 'Jan 9', 'Jan 10']);
-  dataPoints = signal<number[]>([12.50, 12.75, 12.40, 13.10, 13.50, 13.20, 13.80]);
+  labels = signal<string[]>([]);
+  dataPoints = signal<number[]>([]);
+
+  filteredLabels = signal<string[]>([]);
+  filteredDataPoints = signal<number[]>([]);
+  filterRange = signal('');
   // testData = signal<any[]>([]);
 
   maxValue = signal(0);
@@ -107,6 +150,7 @@ export class PriceChartComponent implements OnInit, OnDestroy {
   
   priceDiffStyle = signal("plus");
   isloading = signal(false);
+
 
 
   private watchListService = inject(WatchlistService);
@@ -120,8 +164,8 @@ export class PriceChartComponent implements OnInit, OnDestroy {
   constructor() {
     effect(() => {
       if (this.chart) {
-        const labels = this.labels();
-        const data = this.dataPoints();
+        const labels = this.filteredLabels();
+        const data = this.filteredDataPoints();
         
         this.chart.data.labels = labels;
         this.chart.data.datasets[0].data = data;
@@ -258,7 +302,7 @@ export class PriceChartComponent implements OnInit, OnDestroy {
       const todayVal = this.todayValue();
       this.calcDiff(todayVal);
       //console.log('showing ' + this.lastestDate());
-
+      this.setFilterRange('all');
     });
   }
 
@@ -292,6 +336,8 @@ export class PriceChartComponent implements OnInit, OnDestroy {
       this.lastestDate.set(dates[dates.length - 1]);
       this.calcDiff(this.todayValue());
     }
+
+    this.setFilterRange('all');
   }
 
   calcDiff(currentPrice: number){
@@ -305,6 +351,35 @@ export class PriceChartComponent implements OnInit, OnDestroy {
 
     this.priceDiffStyle.set(diff >= 0 ? 'plus' : 'minus');
     this.priceDiff.set(`${diff >= 0 ? '+' : '-'} $${absDiff} (${percent}%)`);
+  }
+
+  setFilterRange(range:string){
+    
+    if(range == 'all'){
+      this.setFilterRange('3m');
+    } else{
+      this.filterRange.set(range);
+    }
+    
+    const allLabels = this.labels();
+    const allData = this.dataPoints();
+  
+    let pointsToSlice = allLabels.length; 
+    
+
+    switch (range.toLowerCase()) {
+      case '2 day': pointsToSlice = 2; break;
+      case '1w': pointsToSlice = 7; break;
+      case '1m': pointsToSlice = 30; break;
+      case '3m': pointsToSlice = allLabels.length; break;
+      case 'all': pointsToSlice = allLabels.length; break;
+    }
+
+    const slicedLabels = allLabels.slice(-pointsToSlice);
+    const slicedData = allData.slice(-pointsToSlice);
+
+    this.filteredLabels.set(slicedLabels);
+    this.filteredDataPoints.set(slicedData);
   }
 
    ngOnInit() {
@@ -322,6 +397,8 @@ export class PriceChartComponent implements OnInit, OnDestroy {
 
       this.loadWatchlistAll('all');
     }
+
+    this.setFilterRange('3m');
   }
 
   ngOnDestroy() {
