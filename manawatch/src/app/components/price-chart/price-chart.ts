@@ -42,7 +42,7 @@ Chart.register(...registerables);
                   </p>
                 </div>
       </div>
-      <div class="relative w-full h-[350px] mb-8">
+      <div class="relative w-full h-[350px] mb-8" style="max-width: 800px;">
         <canvas #priceChart></canvas>
       </div>
       <div class="flex items-center justify-center mb-8">
@@ -75,12 +75,12 @@ Chart.register(...registerables);
             </button>
 
             <button 
-              (click)="setFilterRange('2 day')" 
-              class="filter-btn flex items-center gap-2 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white cursor-pointer"
-              [class.bg-indigo-600]="filterRange() == '2 day'"
-              [class.text-white]="filterRange() == '2 day'"
+              (click)="setFilterRange('1d')" 
+              class="filter-btn px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white cursor-pointer"
+              [class.bg-indigo-600]="filterRange() == '1d'"
+              [class.text-white]="filterRange() == '1d'"
               >
-                2 day
+                1d
             </button>
         </div>
       </div>
@@ -368,7 +368,7 @@ export class PriceChartComponent implements OnInit, OnDestroy {
     
 
     switch (range.toLowerCase()) {
-      case '2 day': pointsToSlice = 2; break;
+      case '1d': pointsToSlice = 2; break;
       case '1w': pointsToSlice = 7; break;
       case '1m': pointsToSlice = 30; break;
       case '3m': pointsToSlice = allLabels.length; break;
