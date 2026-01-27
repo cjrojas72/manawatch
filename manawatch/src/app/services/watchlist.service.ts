@@ -50,25 +50,39 @@ export class WatchlistService {
     const rawData = this._watchlistPricingData();
     const startDate = this.earliestAddDate();
 
-    console.log(rawData);
-    console.log(startDate);
-    if (!startDate) return [];
+    if (!startDate || rawData.length === 0) return [];
+      const latestPriceStr = rawData[0]?.prices?.[rawData[0].prices.length - 1]?.date;
+      const latestPriceDate = latestPriceStr ? new Date(latestPriceStr).getTime() : 0;
+      const isNewUserGap = latestPriceDate < startDate;
+      const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+      const oneDayBuffer = startDate - 86400000;
 
-    // Map through cards and filter their internal prices array
-    return rawData.map(card => ({
-      ...card,
-      prices: (card.prices || []).filter((p: any) => {
+    return rawData.map(card => {
+      const allPrices = card.prices || [];
+      
+      const filteredPrices = allPrices.filter((p: any) => {
         const priceDate = new Date(p.date).getTime();
-        return priceDate >= startDate;
-      })
-    }));
+
+        if (isNewUserGap) {
+          return priceDate >= thirtyDaysAgo;
+        } else {
+          return priceDate >= oneDayBuffer;
+        }
+      });
+
+      return {
+        ...card,
+        prices: filteredPrices
+      };
+    });
   });
 
 
   readonly totalWatchlistValue = computed(() => {
     const data = this._watchlistPricingData();
+    // console.log('--- TOTAL VALUE CALCULATION ---');
+    // console.log('Total Cards in Data:', data.length);
     return data.reduce((acc, card) => {
-      // Access the latest price from the provider array
       const prices = card.prices || [];
       const latestPrice = prices.length > 0 ? parseFloat(prices[prices.length - 1].price) : 0;
       return acc + latestPrice;
@@ -89,10 +103,12 @@ export class WatchlistService {
   
   async refreshWatchlistData() {
     const cards = await this.getWatchlistCards(); 
+    // console.log(cards);
     this._watchlistCards.set(cards);
 
     if (cards.length > 0) {
       const sids = cards.map(c => c.id);
+      // console.log(sids);
       await this.loadWatchlistPricing(sids); 
     } else {
       this._watchlistPricingData.set([]);
@@ -153,18 +169,25 @@ export class WatchlistService {
   }
 
   async getWatchlistPriceHistory(sids: any[]): Promise<any>{
+      const sidSet = new Set(sids);
+      // console.log(sidSet)
       try {
+      // console.log(sids);
       const response = await this.mtgJsonService.getWatchlistPriceHistory(sids);
+
+      // console.log(response);
       
       if (!response?.cards) return [];
 
-      return response.cards.map((card: any) => {
-        return {
-          ...card,
-          prices: (card.prices || [])
-            .filter((p: any) => p.provider.toLowerCase() === 'tcgplayer')
-            .sort((a: any, b:any) => 
-              new Date(a.date).getTime() - new Date(b.date).getTime())};
+      return response.cards
+        .map((card: any) => {
+          // console.log(card)
+          return {
+            ...card,
+            prices: (card.prices || [])
+              .filter((p: any) => p.provider.toLowerCase() === 'tcgplayer')
+              .sort((a: any, b:any) => 
+                new Date(a.date).getTime() - new Date(b.date).getTime())};
       });
     } catch (error) {
       console.error('Error fetching bulk watchlist prices:', error);
@@ -174,7 +197,9 @@ export class WatchlistService {
 
   async loadWatchlistPricing(sids: any[]): Promise<any> {
     try {
+      // console.log(sids);
       const freshData = await this.getWatchlistPriceHistory(sids);
+      // console.log(freshData);
       this._watchlistPricingData.set(freshData);
     } catch (error) {
       console.error('Failed to load watchlist:', error);

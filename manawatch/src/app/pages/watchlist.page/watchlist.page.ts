@@ -37,6 +37,7 @@ export class WatchlistPage {
 
     const pricing = this.watchlistService.watchlistPricingData();
     const totalsByDate = new Map<string, number>();
+    // console.log("Pricing data to chart is: " + pricing.toString());
 
     pricing.forEach(card => {
       (card.prices || []).forEach((p: any) => {

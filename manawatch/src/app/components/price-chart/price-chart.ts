@@ -41,6 +41,7 @@ export class PriceChartComponent implements AfterViewInit, OnDestroy {
   isLoading = signal(false);
 
   displayData = computed(() => {
+    // console.log(this._inputData());
     const { labels, points, title, setCode } = this._inputData();
     const range = this.filterRange();
     
