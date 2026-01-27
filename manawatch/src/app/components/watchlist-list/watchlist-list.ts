@@ -10,12 +10,12 @@ import { FirebaseService } from '../../services/firebase.service';
   templateUrl: './watchlist-list.html',
   styleUrl: './watchlist-list.css',
 })
-export class WatchlistList implements OnInit, OnDestroy {
+export class WatchlistList {
 
   private watchlistService = inject(WatchlistService);
-  private subscription!: Subscription;
+  // private subscription!: Subscription;
   
-  private firebaseService = inject(FirebaseService);
+  // private firebaseService = inject(FirebaseService);
   private searchQueryEvent = inject(SearchqueryEvent);
 
   selectedCardId = model<string | null>(null);
@@ -24,18 +24,18 @@ export class WatchlistList implements OnInit, OnDestroy {
   isLoading = signal(false);
 
 
-  watchlist = signal<any[]>([]);
+  watchlist = this.watchlistService.watchlistCards;
 
-  constructor() {
-    effect(() => {
-      const user = this.firebaseService.currentUser();
-      if (user) {
-        this.getWatchlist();
-      } else {
-        this.watchlist.set([]);
-      }
-    });
-  }
+  // constructor() {
+  //   effect(() => {
+  //     const user = this.firebaseService.currentUser();
+  //     if (user) {
+  //       this.getWatchlist();
+  //     } else {
+  //       this.watchlist.set([]);
+  //     }
+  //   });
+  // }
 
   paginatedWatchlist = computed(() => {
     const startIndex = (this.currentPage() - 1) * this.pageSize();
@@ -46,13 +46,13 @@ export class WatchlistList implements OnInit, OnDestroy {
 
   nextPage() {
     if (this.currentPage() < this.totalPages()) {
-      this.currentPage.set(this.currentPage() + 1);
+      this.currentPage.update(page => page + 1);
     }
   }
 
   prevPage(){
     if (this.currentPage() > 1) {
-      this.currentPage.set(this.currentPage() - 1);
+      this.currentPage.update(page => page - 1);
     }
   }
 
@@ -67,18 +67,18 @@ export class WatchlistList implements OnInit, OnDestroy {
   }
 
 
-  getWatchlist() {
-    this.isLoading.set(true);
-    this.watchlistService.getWatchlistCards()
-      .then(cards => {
-        this.watchlist.set(cards);
-        this.isLoading.set(false);
-      })
-      .catch(() => this.isLoading.set(false));
-  }
+  // getWatchlist() {
+  //   this.isLoading.set(true);
+  //   this.watchlistService.getWatchlistCards()
+  //     .then(cards => {
+  //       this.watchlist.set(cards);
+  //       this.isLoading.set(false);
+  //     })
+  //     .catch(() => this.isLoading.set(false));
+  // }
 
   handleShowAll(){
-    this.watchlistService.emitCardAdded();
+    this.watchlistService.updateWatchlistItem(null);
   }
 
   async removeCard(cardId: string) {
@@ -92,15 +92,15 @@ export class WatchlistList implements OnInit, OnDestroy {
     }
   }
 
-  ngOnInit(): void {
-    this.subscription = this.watchlistService.cardAdded$.subscribe(() => {
-      this.getWatchlist();
-    });
-  }
+  // ngOnInit(): void {
+  //   this.subscription = this.watchlistService.cardAdded$.subscribe(() => {
+  //     this.getWatchlist();
+  //   });
+  // }
 
-  ngOnDestroy(): void {
-     if (this.subscription) {
-       this.subscription.unsubscribe();
-     }
-  }
+  // ngOnDestroy(): void {
+  //    if (this.subscription) {
+  //      this.subscription.unsubscribe();
+  //    }
+  // }
 }

@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnInit, signal } from '@angular/core';
+import { Component, inject, Input, OnDestroy, OnInit, signal } from '@angular/core';
 import { ScryfallService } from '../../services/scryfall';
 import { PriceChartComponent } from '../../components/price-chart/price-chart';
 import { KeyValuePipe } from '@angular/common';
@@ -12,7 +12,7 @@ import { WatchlistService } from '../../services/watchlist.service';
   templateUrl: './card-detail.page.html',
   styleUrl: './card-detail.page.css',
 })
-export class CardDetailPage implements OnInit {
+export class CardDetailPage implements OnInit, OnDestroy {
 
   private searchQueryEvent = inject(SearchqueryEvent);
   private scryFallService = inject(ScryfallService);
@@ -21,8 +21,12 @@ export class CardDetailPage implements OnInit {
   selectedTf = signal('1M');
   cardDetails = signal<any>([]);
   isLoading = signal(false);
+  chartLoading = signal(false);
   printings = signal<any>([]);
   disableBtn = signal(false);
+  
+
+  chartData = signal<any>({ labels: [], points: [], title: '', color: 'oklch(76.9% 0.184 81.3)' });
 
   sales = [
     { id: 1, condition: 'Near Mint', date: 'JAN 16', platform: 'TCGPLAYER', price: 14250.00 },
@@ -38,9 +42,30 @@ export class CardDetailPage implements OnInit {
     if (value) {
       this.fetchCardData(value);
       this.checkWatchlistStatus();
+      this.fetchPriceHistory(value);
     }
   }
   get cardId() { return this._cardId; }
+
+
+  async fetchPriceHistory(id: string) {
+    this.chartLoading.set(true);
+    try {
+      const res: any = await this.watchlistService.getPriceHistory(id);
+      if (res && res.prices) {
+        this.chartData.set({
+          title: res.name || 'Price History',
+          labels: res.prices.map((p: any) => p.date),
+          points: res.prices.map((p: any) => parseFloat(p.price) || 0),
+          color: 'oklch(76.9% 0.184 81.3)' // Detail Orange
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching price history:", err);
+    } finally {
+      this.chartLoading.set(false);
+    }
+  }
 
   fetchCardData(id: string) {
     this.isLoading.set(true);
@@ -67,8 +92,9 @@ export class CardDetailPage implements OnInit {
     this.disableBtn.set(exists);
   }
 
-  addCardToWatchlist(card: any){
-    this.watchlistService.addCardToWatchlist(card);
+  async addCardToWatchlist(card: any){
+    await this.watchlistService.addCardToWatchlist(card);
+    this.checkWatchlistStatus();
   }
 
   selectCard(id: string){
@@ -79,12 +105,16 @@ export class CardDetailPage implements OnInit {
 
     if(this.cardId){
       this.fetchCardData(this.cardId);
-
+      this.fetchPriceHistory(this.cardId);
       this.checkWatchlistStatus();
       this.watchlistService.cardAdded$.subscribe(() => {
         this.checkWatchlistStatus();
       });
     }
+  }
+
+  ngOnDestroy(): void {
+    
   }
 
 

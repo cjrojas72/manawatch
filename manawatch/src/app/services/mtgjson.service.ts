@@ -37,4 +37,35 @@ export class MtgJsonService {
       return [];
     }
   }
+
+  async getWatchlistPriceHistory(sIds: any[]) {
+    const gqlQuery = {
+      query: `
+        query GetPriceByScryfall($sIds: [String!]!) { 
+          cards(filter: { identifiers: { scryfallId_in: $sIds } } page: { take: 100, skip: 0 }) { 
+            name 
+            uuid 
+            setCode 
+            prices { 
+              price 
+              date 
+              listType 
+              cardType 
+              provider 
+            }
+          }
+        }`,
+      variables: { sIds } 
+    };
+
+    try {
+      const response = await lastValueFrom(
+        this.http.post<any>(this.API_PATH, gqlQuery)
+      );
+      return response.data;
+    } catch (error) {
+      console.error('GraphQL Error:', error);
+      return [];
+    }
+  }
 }

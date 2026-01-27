@@ -1,4 +1,4 @@
-import { effect, inject, Injectable, signal, Signal } from '@angular/core';
+import { effect, inject, Injectable, signal, HostListener, computed } from '@angular/core';
 import { collection, getDocs,query, orderBy, limit, doc, setDoc, deleteDoc, where} from "firebase/firestore"; 
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
@@ -24,7 +24,6 @@ type mockData = {
 
 export class WatchlistService {
   private app = initializeApp(environment.firebase);
- // Initialize Cloud Firestore and get a reference to the service
   private db = getFirestore(this.app, "watchlist");
   private auth = getAuth(this.app);
   private firebaseService = inject(FirebaseService);
@@ -32,7 +31,7 @@ export class WatchlistService {
 
   private mtgJsonService = new MtgJsonService();
 
-  private userId = signal<string | null>(null);
+ 
 
   private cardAddedSource = new Subject<void>();
   private watchlistItemSelected = new BehaviorSubject<string | null>(null);
@@ -40,17 +39,87 @@ export class WatchlistService {
 
   cardAdded$ = this.cardAddedSource.asObservable();
   watchlistItemSelected$ = this.watchlistItemSelected.asObservable();
+  
+  
+  private _watchlistCards = signal<any[]>([]);
+  private _watchlistPricingData = signal<any[]>([]);
+  private userId = computed(() => this.firebaseService.currentUser()?.uid || null);
 
+  readonly watchlistCards = this._watchlistCards.asReadonly();
+  readonly watchlistPricingData = computed(() => {
+    const rawData = this._watchlistPricingData();
+    const startDate = this.earliestAddDate();
+
+    console.log(rawData);
+    console.log(startDate);
+    if (!startDate) return [];
+
+    // Map through cards and filter their internal prices array
+    return rawData.map(card => ({
+      ...card,
+      prices: (card.prices || []).filter((p: any) => {
+        const priceDate = new Date(p.date).getTime();
+        return priceDate >= startDate;
+      })
+    }));
+  });
+
+
+  readonly totalWatchlistValue = computed(() => {
+    const data = this._watchlistPricingData();
+    return data.reduce((acc, card) => {
+      // Access the latest price from the provider array
+      const prices = card.prices || [];
+      const latestPrice = prices.length > 0 ? parseFloat(prices[prices.length - 1].price) : 0;
+      return acc + latestPrice;
+    }, 0);
+  });
   
   constructor() {
     effect(() => {
-      const user = this.firebaseService.currentUser();
-      this.userId.set(user ? user.uid : null);
+    if (this.userId()) {
+      this.refreshWatchlistData();
+    } else {
+      this._watchlistCards.set([]);
+      this._watchlistPricingData.set([]);
+    }
+  });
+  }
+
+  
+  async refreshWatchlistData() {
+    const cards = await this.getWatchlistCards(); 
+    this._watchlistCards.set(cards);
+
+    if (cards.length > 0) {
+      const sids = cards.map(c => c.id);
+      await this.loadWatchlistPricing(sids); 
+    } else {
+      this._watchlistPricingData.set([]);
+    }
+  }
+
+  private earliestAddDate = computed(() => {
+    const cards = this._watchlistCards();
+    if (cards.length === 0) return null;
+
+    const timestamps = cards.map(c => {
+      let d: Date;
+      if (c.addedAt?.seconds) {
+        d = new Date(c.addedAt.seconds * 1000);
+      } else {
+        d = new Date(c.addedAt);
+      }
       
-      // if (user) {
-      //   console.log("WatchlistService: User switched to", user.uid);
-      // }
-    });
+      d.setHours(0, 0, 0, 0); 
+      return d.getTime();
+    }).filter(t => !isNaN(t));
+
+    return timestamps.length ? Math.min(...timestamps) : null;
+  });
+
+  setWatchlistCards(data: any[]) {
+    this._watchlistCards.set(data);
   }
 
   emitCardAdded() {
@@ -65,7 +134,7 @@ export class WatchlistService {
     this.watchlistItemSelected.next(newParams);
   }
 
-  async getPriceHistory(sId: string): Promise<any> {
+  async getPriceHistory(sId: string): Promise<any[]> {
     const response = await this.mtgJsonService.getCardPriceHistory(sId);
     const filteredCards = response?.cards?.map((card: any) => {
       return {
@@ -83,48 +152,77 @@ export class WatchlistService {
     return filteredCards[0];
   }
 
-  getMockWatchlistPriceHistory(data: any[]): mockData[] {
-    if (!this.userId()) {
-      console.error("No userId found");
+  async getWatchlistPriceHistory(sids: any[]): Promise<any>{
+      try {
+      const response = await this.mtgJsonService.getWatchlistPriceHistory(sids);
+      
+      if (!response?.cards) return [];
+
+      return response.cards.map((card: any) => {
+        return {
+          ...card,
+          prices: (card.prices || [])
+            .filter((p: any) => p.provider.toLowerCase() === 'tcgplayer')
+            .sort((a: any, b:any) => 
+              new Date(a.date).getTime() - new Date(b.date).getTime())};
+      });
+    } catch (error) {
+      console.error('Error fetching bulk watchlist prices:', error);
       return [];
     }
-
-    const mockWatchlistData: mockData[] = [];
-
-    data.forEach(card => {
-      const dateRunner = card.addedAt.toDate();
-      let currentPrice = card.priceAtTimeOfAdding || 10;
-      const today = new Date();
-
-      //console.log(dateRunner, today);
-
-      const cardHistory = {
-        name: card.name,
-        id: card.id,
-        dates: [] as string[],
-        prices: [] as number[]
-      };
-
-      while (dateRunner <= today) {
-        // 3. The Random Walk: 
-        // Multiplies price by a factor between 0.98 (-2%) and 1.03 (+3%)
-        const fluctuation = 1 + (Math.random() * 0.05 - 0.02);
-        currentPrice = parseFloat((currentPrice * fluctuation).toFixed(2));
-
-        // 4. Store the daily "snapshot"
-        // Format as YYYY-MM-DD for consistency
-        cardHistory.dates.push(dateRunner.toISOString().split('T')[0]);
-        cardHistory.prices.push(currentPrice);
-
-        // 5. Increment the day
-        dateRunner.setDate(dateRunner.getDate() + 1);
-      }
-
-      mockWatchlistData.push(cardHistory);
-    });
-
-    return mockWatchlistData;
   }
+
+  async loadWatchlistPricing(sids: any[]): Promise<any> {
+    try {
+      const freshData = await this.getWatchlistPriceHistory(sids);
+      this._watchlistPricingData.set(freshData);
+    } catch (error) {
+      console.error('Failed to load watchlist:', error);
+    }
+  }
+
+  // getMockWatchlistPriceHistory(data: any[]): mockData[] {
+  //   if (!this.userId()) {
+  //     console.error("No userId found");
+  //     return [];
+  //   }
+
+  //   const mockWatchlistData: mockData[] = [];
+
+  //   data.forEach(card => {
+  //     const dateRunner = card.addedAt.toDate();
+  //     let currentPrice = card.priceAtTimeOfAdding || 10;
+  //     const today = new Date();
+
+  //     //console.log(dateRunner, today);
+
+  //     const cardHistory = {
+  //       name: card.name,
+  //       id: card.id,
+  //       dates: [] as string[],
+  //       prices: [] as number[]
+  //     };
+
+  //     while (dateRunner <= today) {
+  //       // 3. The Random Walk: 
+  //       // Multiplies price by a factor between 0.98 (-2%) and 1.03 (+3%)
+  //       const fluctuation = 1 + (Math.random() * 0.05 - 0.02);
+  //       currentPrice = parseFloat((currentPrice * fluctuation).toFixed(2));
+
+  //       // 4. Store the daily "snapshot"
+  //       // Format as YYYY-MM-DD for consistency
+  //       cardHistory.dates.push(dateRunner.toISOString().split('T')[0]);
+  //       cardHistory.prices.push(currentPrice);
+
+  //       // 5. Increment the day
+  //       dateRunner.setDate(dateRunner.getDate() + 1);
+  //     }
+
+  //     mockWatchlistData.push(cardHistory);
+  //   });
+
+  //   return mockWatchlistData;
+  // }
 
 
   async getWatchlistCards(): Promise<Array<any>> {
@@ -188,7 +286,7 @@ export class WatchlistService {
         provider: "tcgplayer"
       });
       
-      this.emitCardAdded();
+      await this.refreshWatchlistData();
       this.toast.success('Added to watchlist!');
       return;
      
@@ -213,8 +311,9 @@ export class WatchlistService {
     try {
       await deleteDoc(cardDocRef);
       //console.log(`Card ${cardId} removed from watchlist.`);
+      await this.refreshWatchlistData();
+      this.updateWatchlistItem(null);
       this.infoToast('Card removed from watchlist');
-      this.emitCardAdded();
     } catch (error) {
       console.error("Error removing card from watchlist:", error);
       this.errorToast('Error removing card');

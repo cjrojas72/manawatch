@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, effect } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
-import { FirebaseService } from './services/firebase.service';
 import { AuthModal } from './auth/auth-modal/auth-modal';
+import { WatchlistService } from './services/watchlist.service';
 
 
 @Component({
@@ -10,8 +10,13 @@ import { AuthModal } from './auth/auth-modal/auth-modal';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {
+export class App implements OnInit{
 
 
   private router = inject(Router);
+  private watchlistService = inject(WatchlistService);
+
+  ngOnInit() {
+    this.watchlistService.refreshWatchlistData();
+  }
 }

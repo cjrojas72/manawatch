@@ -149,8 +149,8 @@
         <div class="lg:col-span-8 space-y-8">
           
           <!-- Chart Section -->
-          <div class="bg-[#16161a] border border-white/5 rounded-3xl shadow-xl overflow-hidden" [class.animate-pulse]="isLoading() == true">
-            <app-price-chart [mode]="'detail'" [cardId]="cardDetails().id"></app-price-chart>
+          <div class="bg-[#16161a] border border-white/5 rounded-3xl shadow-xl overflow-hidden" [class.animate-pulse]="chartLoading() == true">
+            <app-price-chart [data]="chartData()"></app-price-chart>
           </div>
 
           <!-- Purchase Links Section -->
