@@ -1,16 +1,16 @@
  <div class="lg:col-span-4 bg-[#16161a] border border-white/5 rounded-3xl overflow-hidden flex flex-col shadow-xl overflow-y-auto custom-scrollbar">
-                <div class="p-6 border-b border-white/5 text-indigo-400 flex justify-between">
+                <div class="p-3 sm:p-6 border-b border-white/5 text-indigo-400 flex justify-between">
                   <div class="flex items-center gap-2">
                     <i class="fa-solid fa-chart-line"></i>
                     <h3 class="text-xs font-black uppercase tracking-widest">Tracking ( {{ watchlist().length }} )</h3>
                   </div>
-                  <button 
+                  <button
                     (click)="handleShowAll()"
-                    class="cursor-pointer hover:text-indigo-300">Show All</button>
+                    class="cursor-pointer hover:text-indigo-300 text-xs sm:text-sm">Show All</button>
                 </div>
-                <div class="p-4 space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar">
+                <div class="p-2 sm:p-4 space-y-2 sm:space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar">
                   @for (card of paginatedWatchlist(); track card.id) {
-                    <div class="flex items-start gap-4 p-3 hover:bg-white/5 rounded-xl transition-all cursor-pointer group"
+                    <div class="flex items-start gap-2 sm:gap-4 p-2 sm:p-3 hover:bg-white/5 rounded-xl transition-all cursor-pointer group"
                       [class.border-indigo-400]="selectedCardId() === card.id"
                       [class.border-1]="selectedCardId() === card.id"
                       [class.animate-pulse]="isLoading() == true"
@@ -18,34 +18,34 @@
                     >
                         <img [src]="card.image_uris?.small" class="w-12 h-16 object-contain rounded shadow hidden" alt="{{ card.name}}">
                         <div class="flex-grow min-w-0">
-                            <h4 class="text-sm font-bold text-slate-200 group-hover:text-indigo-400 truncate transition-colors">{{ card.name }}</h4>
+                            <h4 class="text-xs sm:text-sm font-bold text-slate-200 group-hover:text-indigo-400 truncate transition-colors">{{ card.name }}</h4>
                             <div class="flex items-start gap-1 mt-1 flex-col">
-                                <span class="text-[9px] text-slate-500 font-bold uppercase truncate">{{ card.set_name }}</span>
-                                <div class="gap-2 flex">
-                                    <span class="text-[9px] px-1 bg-white/5 border border-white/10 rounded text-slate-500 uppercase">{{ card.rarity }}</span> 
-                                    <span class="text-[9px] text-slate-500 bg-white/5 border border-white/10 rounded uppercase truncate">#{{ card.collector_number }}</span> 
+                                <span class="text-[8px] sm:text-[9px] text-slate-500 font-bold uppercase truncate max-w-[120px] sm:max-w-none">{{ card.set_name }}</span>
+                                <div class="gap-1 sm:gap-2 flex flex-wrap">
+                                    <span class="text-[8px] sm:text-[9px] px-1 bg-white/5 border border-white/10 rounded text-slate-500 uppercase">{{ card.rarity }}</span>
+                                    <span class="text-[8px] sm:text-[9px] text-slate-500 bg-white/5 border border-white/10 rounded uppercase truncate">#{{ card.collector_number }}</span>
                                    @if(card.foil){
-                                    <span class="text-[9px] px-1 bg-white/5 border border-white/10 rounded text-slate-500 uppercase">Foil</span>
+                                    <span class="text-[8px] sm:text-[9px] px-1 bg-white/5 border border-white/10 rounded text-slate-500 uppercase">Foil</span>
                                   }
                                 </div>
-                                
+
                             </div>
                         </div>
-                        <!-- <span class="text-sm font-mono font-bold text-white font-light shrink-0 flex-start">$ 
-                        @if(card.foil){ 
+                        <!-- <span class="text-sm font-mono font-bold text-white font-light shrink-0 flex-start">$
+                        @if(card.foil){
                             {{ card.prices?.usd_foil }}
                         } @else{
                             {{ card.prices?.usd }}
                         }
                         </span> -->
-                        <div class="flex items-center gap-3">
-                          <button (click)="navigateToCardDetails(card.id)" 
-                                  class="text-amber-500 hover:text-indigo-400 transition-colors cursor-pointer">
+                        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                          <button (click)="navigateToCardDetails(card.id)"
+                                  class="text-amber-500 hover:text-indigo-400 transition-colors cursor-pointer text-xs sm:text-sm">
                             <i class="fa-solid fa-arrow-up-right-from-square"></i>
                           </button>
 
-                          <button (click)="removeCard(card.id)" 
-                                  class="text-red-400 hover:text-red-500 transition-colors cursor-pointer">
+                          <button (click)="removeCard(card.id)"
+                                  class="text-red-400 hover:text-red-500 transition-colors cursor-pointer text-xs sm:text-sm">
                             <i class="fa-solid fa-trash-can"></i>
                           </button>
                         </div>
@@ -58,22 +58,22 @@
                   }
                 </div>
 
-                <div class="pagination-controls flex items-center justify-between my-6 px-4">
-                  <button 
-                    (click)="prevPage()" 
+                <div class="pagination-controls flex items-center justify-between my-4 sm:my-6 px-2 sm:px-4">
+                  <button
+                    (click)="prevPage()"
                     [disabled]="currentPage() === 1"
-                    class="px-4 py-2 bg-white/5 rounded-lg disabled:opacity-30 hover:bg-white/10 transition">
+                    class="px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-white/5 rounded-lg disabled:opacity-30 hover:bg-white/10 transition">
                     Previous
                   </button>
 
-                  <span class="text-slate-400 text-sm">
+                  <span class="text-slate-400 text-xs sm:text-sm">
                     Page <strong>{{ currentPage() }} of {{ totalPages() }}</strong>
                   </span>
 
-                  <button 
-                    (click)="nextPage()" 
+                  <button
+                    (click)="nextPage()"
                     [disabled]="currentPage() === totalPages()"
-                    class="px-4 py-2 bg-white/5 rounded-lg disabled:opacity-30 hover:bg-white/10 transition">
+                    class="px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-white/5 rounded-lg disabled:opacity-30 hover:bg-white/10 transition">
                     Next
                   </button>
                 </div>
