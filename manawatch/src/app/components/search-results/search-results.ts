@@ -1,6 +1,6 @@
-import { Component, inject, OnInit, signal, OnDestroy } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ScryfallService } from '../../services/scryfall';
-import { Subscription } from 'rxjs';
 import { SearchqueryEvent } from '../../services/searchquery.event';
 import { WatchlistService } from '../../services/watchlist.service';
 
@@ -10,31 +10,32 @@ import { WatchlistService } from '../../services/watchlist.service';
   templateUrl: './search-results.html',
   styleUrl: './search-results.css',
 })
-export class SearchResults implements OnInit, OnDestroy {
+export class SearchResults implements OnInit {
+  private scryFallService = inject(ScryfallService);
+  private watchlistService = inject(WatchlistService);
+  private searchEvent = inject(SearchqueryEvent);
+  private destroyRef = inject(DestroyRef);
+
   searchResults = signal<any[]>([]);
-  scryFallService = inject(ScryfallService);
-  watchlistService = inject(WatchlistService);
   showResults = signal(false);
   isLoading = signal(false);
 
-  private searchSub?: Subscription;
-  private searchEvent = inject(SearchqueryEvent); 
-
   executeSearch(queryStr: string) {
-    if (!queryStr){
+    if (!queryStr) {
       return;
     }
     this.isLoading.set(true);
-    this.scryFallService.searchCards(queryStr).subscribe(cards => {
-      this.searchResults.set(cards);
-      this.isLoading.set(false);
-      //console.log(cards);
-    });
+    this.scryFallService.searchCards(queryStr)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(cards => {
+        this.searchResults.set(cards);
+        this.isLoading.set(false);
+      });
 
     this.showResults.set(true);
   }
 
-  selectCardDetails(cardId: string){
+  selectCardDetails(cardId: string) {
     this.searchEvent.selectCard(cardId);
     this.showResults.set(false);
   }
@@ -45,21 +46,13 @@ export class SearchResults implements OnInit, OnDestroy {
   }
 
   async addCardToWatchlist(card: any) {
-    //console.log('Adding card to watchlist:', card);
     await this.watchlistService.addCardToWatchlist(card);
     this.watchlistService.emitCardAdded();
   }
 
   ngOnInit(): void {
-    this.searchSub = this.searchEvent.searchQuery$.subscribe(query => {
-      this.executeSearch(query);
-    });
-  }
-
-  ngOnDestroy(): void {
-
-    if (this.searchSub) { 
-      this.searchSub?.unsubscribe();
-    }
+    this.searchEvent.searchQuery$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(query => this.executeSearch(query));
   }
 }

@@ -13,11 +13,10 @@ export class ToptenList implements OnInit {
   private scryfallService = inject(ScryfallService);
   private cardSelectService = inject(SearchqueryEvent);
 
-  loadMarketData(){
-    this.scryfallService.getTop10Cards().subscribe(res =>{
-      //console.log(res);
+  loadMarketData() {
+    this.scryfallService.getTop10Cards().subscribe(res => {
       this.marketHighs.set(res);
-    })
+    });
   }
 
   onCardSelect(cardId: string){

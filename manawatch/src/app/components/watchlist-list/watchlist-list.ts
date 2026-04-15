@@ -1,8 +1,6 @@
-import { Component, inject, OnDestroy, OnInit, signal, computed, model, effect } from '@angular/core';
+import { Component, inject, signal, computed, model } from '@angular/core';
 import { WatchlistService } from '../../services/watchlist.service';
-import { Subscription } from 'rxjs';
 import { SearchqueryEvent } from '../../services/searchquery.event';
-import { FirebaseService } from '../../services/firebase.service';
 
 @Component({
   selector: 'app-watchlist-list',
@@ -13,9 +11,6 @@ import { FirebaseService } from '../../services/firebase.service';
 export class WatchlistList {
 
   private watchlistService = inject(WatchlistService);
-  // private subscription!: Subscription;
-  
-  // private firebaseService = inject(FirebaseService);
   private searchQueryEvent = inject(SearchqueryEvent);
 
   selectedCardId = model<string | null>(null);
@@ -23,19 +18,7 @@ export class WatchlistList {
   pageSize = signal(5);
   isLoading = signal(false);
 
-
   watchlist = this.watchlistService.watchlistCards;
-
-  // constructor() {
-  //   effect(() => {
-  //     const user = this.firebaseService.currentUser();
-  //     if (user) {
-  //       this.getWatchlist();
-  //     } else {
-  //       this.watchlist.set([]);
-  //     }
-  //   });
-  // }
 
   paginatedWatchlist = computed(() => {
     const startIndex = (this.currentPage() - 1) * this.pageSize();
@@ -50,7 +33,7 @@ export class WatchlistList {
     }
   }
 
-  prevPage(){
+  prevPage() {
     if (this.currentPage() > 1) {
       this.currentPage.update(page => page - 1);
     }
@@ -61,23 +44,12 @@ export class WatchlistList {
     this.watchlistService.updateWatchlistItem(cardId);
   }
 
-  navigateToCardDetails(cardId: string){
+  navigateToCardDetails(cardId: string) {
     this.searchQueryEvent.selectCard(cardId);
     this.searchQueryEvent.selectTab("market");
   }
 
-
-  // getWatchlist() {
-  //   this.isLoading.set(true);
-  //   this.watchlistService.getWatchlistCards()
-  //     .then(cards => {
-  //       this.watchlist.set(cards);
-  //       this.isLoading.set(false);
-  //     })
-  //     .catch(() => this.isLoading.set(false));
-  // }
-
-  handleShowAll(){
+  handleShowAll() {
     this.watchlistService.updateWatchlistItem(null);
   }
 
@@ -91,16 +63,4 @@ export class WatchlistList {
       this.prevPage();
     }
   }
-
-  // ngOnInit(): void {
-  //   this.subscription = this.watchlistService.cardAdded$.subscribe(() => {
-  //     this.getWatchlist();
-  //   });
-  // }
-
-  // ngOnDestroy(): void {
-  //    if (this.subscription) {
-  //      this.subscription.unsubscribe();
-  //    }
-  // }
 }

@@ -50,7 +50,6 @@ export class AuthModal {
         await this.firebaseServiceAuth.signUp(email!, password!);
       }
       this.closeAuthModal();
-      // window.location.reload();
     } catch (err: any) {
       this.errorMessage.set(err.message);
     } finally {
@@ -64,7 +63,6 @@ export class AuthModal {
     try {
       await this.firebaseServiceAuth.loginWithGoogle();
       this.closeAuthModal();
-      // window.location.reload();
     } catch (err: any) {
       this.errorMessage.set(err.message || 'Google Auth Error');
     } finally {
@@ -79,11 +77,7 @@ export class AuthModal {
     await this.firebaseServiceAuth.resetPassword(email);
   }
 
-  // openAuthModal() { 
-  //   this.showAuthModal.set(true); 
-  // }
-
-  closeAuthModal() { 
+  closeAuthModal() {
     this.firebaseServiceAuth.closeAuth();
     this.authForm.reset();
 

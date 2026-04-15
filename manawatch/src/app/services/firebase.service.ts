@@ -1,31 +1,30 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
-import { collection, getDocs,query, orderBy, limit } from "firebase/firestore"; 
+import { Injectable, signal, inject } from '@angular/core';
+import { collection, getDocs, query, orderBy, limit, getFirestore } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { environment } from '../../environments/environment.development';
+import { environment } from '../../environments/environment';
 import {
   User,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  signInWithPopup, 
-  GoogleAuthProvider, 
+  signInWithPopup,
+  GoogleAuthProvider,
   sendPasswordResetEmail,
-  updatePassword, 
-  reauthenticateWithCredential, 
+  updatePassword,
+  reauthenticateWithCredential,
   EmailAuthProvider,
   getAuth
 } from 'firebase/auth';
-import { HotToastService } from '@ngxpert/hot-toast';
+import { NotificationService } from './notification.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FirebaseService {
 
-  private app = initializeApp(environment.firebase);
-  private toastService = inject(HotToastService);
+  readonly app = initializeApp(environment.firebase);
+  private notify = inject(NotificationService);
  // Initialize Cloud Firestore and get a reference to the service
   db = getFirestore(this.app, "marketdata");
   auth = getAuth(this.app);
@@ -51,7 +50,7 @@ export class FirebaseService {
   closeAuth() {
     this.showAuthModal.set(false);
   }
-  
+
 
   async getMarketData(){
     try {
@@ -60,7 +59,7 @@ export class FirebaseService {
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
-        return querySnapshot .docs[0].data();
+        return querySnapshot.docs[0].data();
       }
     } catch (error) {
       console.error("Error fetching latest market data:", error);
@@ -78,7 +77,7 @@ export class FirebaseService {
       await createUserWithEmailAndPassword(this.auth, email, password);
     } catch (error) {
       console.error('Firebase Sign Up Error:', error);
-      this.errorToast("There was an issue during signup. Please try again.");
+      this.notify.error("There was an issue during signup. Please try again.");
       throw error;
     }
   }
@@ -86,9 +85,9 @@ export class FirebaseService {
   async signIn(email: string, password: string): Promise<void> {
     try {
       await signInWithEmailAndPassword(this.auth, email, password);
-      this.successToast("You are now signed in!");
+      this.notify.success("You are now signed in!");
     } catch (error: any) {
-      this.errorToast("There was an issue during login. Please try again.");
+      this.notify.error("There was an issue during login. Please try again.");
       throw error.message;
     }
   }
@@ -99,18 +98,18 @@ export class FirebaseService {
 
     try {
       const result = await signInWithPopup(this.auth, provider);
-      this.successToast("You are now signed in!");
+      this.notify.success("You are now signed in!");
       return result.user;
     } catch (error: any) {
       console.error("Error during Google Sign-In:", error.code);
-      this.errorToast("There was an issue during login. Please try again.");
+      this.notify.error("There was an issue during login. Please try again.");
       throw error;
     }
   }
 
   async signOut(): Promise<void> {
     await signOut(this.auth);
-    this.infoToast("You are now signed out.");
+    this.notify.info("You are now signed out.");
   }
 
   async resetPassword(email: string) {
@@ -135,51 +134,6 @@ export class FirebaseService {
     } catch (error: any) {
       throw error;
     }
-  }
-
-  successToast(msg: string){
-    this.toastService.success( msg, {
-        style: {
-            background: 'hsl(143, 85%, 96%)',
-            borderColor: 'hsl(145, 92%, 87%)',
-            color: 'hsl(140, 100%, 27%)',
-          },
-          iconTheme: {
-            primary: 'hsl(140, 100%, 27%)',
-            secondary: 'hsl(143, 85%, 96%)',
-          },
-          icon: '<i class="fa-regular fa-circle-check"></i>'
-    })
-  }
-
-  infoToast(msg: string){
-    this.toastService.info( msg, {
-       style: {
-            background: 'hsl(208, 100%, 97%)',
-            borderColor: 'hsl(221, 91%, 93%)',
-            color: 'hsl(210, 92%, 45%)',
-          },
-          iconTheme: {
-            primary: 'hsl(210, 92%, 45%)',
-            secondary: 'hsl(208, 100%, 97%)',
-          },
-          icon: '<i class="fa-solid fa-circle-info"></i>',
-    })
-  }
-
-  errorToast(msg: string){
-    this.toastService.error( msg, {
-        style: {
-            background: 'hsl(359, 100%, 97%)',
-            borderColor: 'hsl(359, 100%, 94%)',
-            color: 'hsl(360, 100%, 45%)',
-          },
-          iconTheme: {
-            primary: 'hsl(360, 100%, 45%)',
-            secondary: 'hsl(359, 100%, 97%)',
-          },
-          icon: '<i class="fa-solid fa-circle-info"></i>',
-    })
   }
 
 }

@@ -1,4 +1,5 @@
-import { Component, inject, Input, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, inject, Input, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ScryfallService } from '../../services/scryfall';
 import { PriceChartComponent } from '../../components/price-chart/price-chart';
 import { KeyValuePipe } from '@angular/common';
@@ -12,11 +13,18 @@ import { WatchlistService } from '../../services/watchlist.service';
   templateUrl: './card-detail.page.html',
   styleUrl: './card-detail.page.css',
 })
-export class CardDetailPage implements OnInit, OnDestroy {
+export class CardDetailPage {
 
   private searchQueryEvent = inject(SearchqueryEvent);
   private scryFallService = inject(ScryfallService);
   private watchlistService = inject(WatchlistService);
+  private destroyRef = inject(DestroyRef);
+
+  constructor() {
+    this.watchlistService.cardAdded$
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.checkWatchlistStatus());
+  }
 
   selectedTf = signal('1M');
   cardDetails = signal<any>([]);
@@ -72,11 +80,11 @@ export class CardDetailPage implements OnInit, OnDestroy {
 
     this.scryFallService.getCardById(id).pipe(
       tap(card => this.cardDetails.set(card)),
-      switchMap(card => this.scryFallService.fetchPrintings(card.oracle_id))
+      switchMap(card => this.scryFallService.fetchPrintings(card.oracle_id)),
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe({
         next: (printings) => {
           this.printings.set(printings);
-          //console.log("Printings updated:", this.printings());
           this.isLoading.set(false);
         },
         error: (err) => {
@@ -100,23 +108,4 @@ export class CardDetailPage implements OnInit, OnDestroy {
   selectCard(id: string){
     this.searchQueryEvent.selectCard(id);
   }
-
-  ngOnInit(): void {
-
-    if(this.cardId){
-      this.fetchCardData(this.cardId);
-      this.fetchPriceHistory(this.cardId);
-      this.checkWatchlistStatus();
-      this.watchlistService.cardAdded$.subscribe(() => {
-        this.checkWatchlistStatus();
-      });
-    }
-  }
-
-  ngOnDestroy(): void {
-    
-  }
-
-
-  
 }

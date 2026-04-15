@@ -14,13 +14,10 @@ export class TrendingList implements OnInit {
   private scryfallService = inject(ScryfallService);
   private cardSelectService = inject(SearchqueryEvent);
 
-  loadMarketData(){
-    this.scryfallService.getTrendingCards().then(res =>{
-      //console.log(res);
+  loadMarketData() {
+    this.scryfallService.getTrendingCards().then(res => {
       this.marketTrending.set(res);
     });
-
-    
   }
 
   onCardSelect(cardId: string){
