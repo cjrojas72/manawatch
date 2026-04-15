@@ -1,5 +1,5 @@
 import { effect, inject, Injectable, signal, computed } from '@angular/core';
-import { collection, getDocs, query, doc, setDoc, deleteDoc, where, getFirestore } from "firebase/firestore";
+import { collection, getDocs, query, doc, setDoc, deleteDoc, where } from "firebase/firestore";
 import { BehaviorSubject, Subject } from 'rxjs';
 import { MtgJsonService } from './mtgjson.service';
 import { FirebaseService } from './firebase.service';
@@ -15,7 +15,7 @@ export class WatchlistService {
   private mtgJsonService = inject(MtgJsonService);
   private notify = inject(NotificationService);
 
-  private db = getFirestore(this.firebaseService.app);
+  private db = this.firebaseService.db;
 
   private cardAddedSource = new Subject<void>();
   private watchlistItemSelected = new BehaviorSubject<string | null>(null);
